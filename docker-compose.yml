@@ -1,0 +1,17 @@
+version: "3.7"
+
+services:
+  db:
+    image: mysql
+    container_name: finalproject_mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${mysql_pass}"
+    ports:
+      - "33066:3306"
+  adminer:
+    image: adminer
+    container_name: finalproject_adminer_container
+    restart: always
+    ports:
+      - 8080:8080
