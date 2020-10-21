@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
 
 #example csv row:
-#['11/10/2020 08:11Aberdeen', 'Joan Pickles', 'Large Flavoured latte - Gingerbread - 2.85, Large Flavoured latte - Vanilla - 2.85, Large Latte - 2.45, Large Flavoured latte - Gingerbread - 2.85', '11.00', 'CARD', '5359353452578239']
+#['11/10/2020 08:11', 'Aberdeen', 'Joan Pickles', 'Large Flavoured latte - Gingerbread - 2.85, Large Flavoured latte - Vanilla - 2.85, Large Latte - 2.45, Large Flavoured latte - Gingerbread - 2.85', '11.00', 'CARD', '5359353452578239']
 
 #['11/10/2020 08:11
 # Aberdeen

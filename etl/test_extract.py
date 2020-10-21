@@ -9,9 +9,11 @@ class TestExtract(unittest.TestCase):
     def test_convert_string_to_list(self, mock_convert_string_to_list):
         pass
         #ARRANGE
-        mock
+        mock_csv_string = "['1/2/3', 'Place', 'John Doe', 'Tea - Earl Grey - 1.00', '5.55', 'CARD', '123456789']"
+        expected_return = ['1/2/3', 'Place', 'John Doe', 'Tea - Earl Grey - 1.00', '5.55', 'CARD', '123456789']
 
         #ACT
-
+        actual_return = extract_from_csv.convert_csv_string_to_list(mock_csv_string)
 
         #ASSERT
+        self.assertEqual(actual_return, expected_return)
