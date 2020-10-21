@@ -25,7 +25,7 @@ End-to-end app execution method not yet implemented.
 - Look at your BrewApp project, you should have a `.env` file in there that contains details.
 - Copy those details and paste them into the `.env` file in the final project.
 
-#### Setting up Docker
+#### Setting up Docker and creating the empty database.
 
 1. Ensure you have a fresh pull of the remote repo on GitHub.
     -   Perform a `git pull` on the master branch to update your local repo.
@@ -38,14 +38,15 @@ End-to-end app execution method not yet implemented.
     -   Start in active shell: `docker-compose up`
     -   Start in background: `docker-compose up -d`
     
-4. You should now be able to navigate to `http://localhost:8080/` in your browser to access the Adminer login page through which we can access MySQL.
+4. You should now be able to navigate to `http://localhost:8080/` in your browser to access the Adminer login page (through which we can access MySQL).
 
 5. Log into Adminer and create a databased titled "team1_finalproject":
     -   Click "Create Database", enter the title, click "Save"
     -   The GIF below shows the steps to perform this.
         - https://i.imgur.com/BtaO5kQ.gif
+    -   You don't need to add anything to the database. This is just an empty database that we will programatically create tables for and load the cleaned CSV data into.
 
-6. To stop the Docker containers run `docker-compose stop`
+6. If you need to stop the Docker containers run `docker-compose stop`
 
 #### Virtual Environment
 
