@@ -14,10 +14,10 @@ End-to-end app execution method not yet implemented.
 -   Run the below command in the root of your project:
     -   `git clone git@github.com:Generaiton-DE-MAN-1/team-1-final-project.git` 
 
-#### Updating your local repo with the latest project code
+#### Updating your local repo with the most up-to-date project code
 
 -   Perform a `git pull` on the master branch to update your local repo's master branch.
-        -   If you need to pull the most recent code to a branch you're working on, `git pull` on master, then `git merge master` into your branch
+    -   If you need to pull the most recent code to a branch you're working on, `git pull` on master, then `git merge master` into your branch
 
 #### Adding a ".env" file to your project to store your MySQL credentials
 
