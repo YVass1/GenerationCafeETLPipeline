@@ -40,7 +40,7 @@ End-to-end app execution method not yet implemented.
     
 4. You should now be able to navigate to `http://localhost:8080/` in your browser to access the Adminer login page (through which we can access MySQL).
 
-5. Log into Adminer and create a databased titled "team1_finalproject":
+5. Log into Adminer and create a database titled "team1_finalproject":
     -   Click "Create Database", enter the title, click "Save"
     -   The GIF below shows the steps to perform this.
         - https://i.imgur.com/BtaO5kQ.gif
