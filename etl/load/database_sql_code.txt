@@ -6,7 +6,7 @@ CREATE TABLE `Orders` (
 	`Payment_id` INT NOT NULL,
 	`Time_id` INT NOT NULL,
 	`Drink_size` varchar(35),
-	PRIMARY KEY (`Order_id`,`Payment_id`)
+	PRIMARY KEY (`Order_id`, `Payment_id`)
 );
 
 DROP TABLE IF EXISTS `Items`;

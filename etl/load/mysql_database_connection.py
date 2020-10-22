@@ -1,13 +1,15 @@
 import pymysql
+from pymysql.constants import CLIENT
 
 class SQL_database:
-    def __init__(self, host = "localhost",port = 33066,user = "root", password = "password",db = "final_project-team1", autocommit = True):
+    def __init__(self, host = "localhost",port = 33066,user = "root", password = "password",db = "final_project-team1", client_flag = CLIENT.MULTI_STATEMENTS, autocommit = True):
         self.host = host
         self.port = port
         self.user = user
         self.password = password
         self.db = db
         self.autocommit = autocommit
+        self.client_flag = client_flag
 
     def make_connection(self):
         return pymysql.connect(
@@ -16,8 +18,9 @@ class SQL_database:
             user = self.user,
             password = self.password,
             db = self.db,
-            autocommit = self.autocommit )
-
+            autocommit = self.autocommit,
+            client_flag = self.client_flag
+            )
 
 if __name__ == "__main__":
    pass
