@@ -37,8 +37,6 @@ def generate_dictionary(csv_strings):
         data["total_price"].append(row[4])
         data["payment_method"].append(row[5])
         data["card_number"].append(row[6])
-    
-    print(data["datetime"][0], data["card_number"][4])
 
     return data
 

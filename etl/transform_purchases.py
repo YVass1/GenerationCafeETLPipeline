@@ -59,6 +59,7 @@ def transform_purchases(purchases):
         split_info_list = make_drink_info_list(drink_info_list)
         split_info_list_with_nones = check_for_flavour(split_info_list) #this adds None to flavour index when no flavour is provided
         drink_info_lists = make_split_info_list(split_info_list_with_nones)
+        
 
         drink_type_list = drink_info_lists[0]
         drink_flavour_list = drink_info_lists[1]
@@ -73,7 +74,7 @@ def transform_purchases(purchases):
     return list_of_dicts
 
 
-test = transform_purchases(["Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Vanilla - 2.85", "Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Vanilla - 2.85", "Large Flavoured latte - Gingerbread - 2.85"])
+test = transform_purchases(["Large Flavoured latte - Gingerbread - 2.85, Coffee - Hazelnut - 2.85", "Large Flavoured latte - Vanilla - 2.85", "Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Vanilla - 2.85", "Large Flavoured latte - Gingerbread - 2.85"])
 
 print(test[0]["drink_type"])
 
