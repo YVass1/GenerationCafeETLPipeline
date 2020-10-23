@@ -1,4 +1,5 @@
 
+customer = [" joan b pickles", " Ross Waits", "Ann Vanburen", "Linda Motes", "Jerome Guinyard"]
 def clean_customer_name(customer_name):
     fnamelist = []
     lnamelist = []
@@ -14,7 +15,6 @@ def clean_customer_name(customer_name):
 
 if __name__ == "__main__":
     customer_name = clean_customer_name(customer)
-    print(customer_name)
     print(customer_name[0])
     print(customer_name[1])
 
