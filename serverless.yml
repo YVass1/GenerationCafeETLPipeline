@@ -1,0 +1,29 @@
+service: redshift-final-demo
+plugins:
+  - serverless-python-requirements
+
+provider:
+  name: aws
+  stage: dev
+  region: eu-west-1
+  role: arn:aws:iam::670948818876:role/ServerlessResourcesRole
+
+package:
+  individually: true
+
+functions:
+  redshift-lambda:
+    runtime: python3.8
+    handler: handler.start
+    module: redshift_lambda
+    vpc:
+      securityGroupIds:
+        - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
+      subnetIds:
+        - !ImportValue RedshiftAndVPC-VPCPrivateSubnet
+    environment:
+      DB_HOST: !ImportValue RedshiftAndVPC-ClusterAddress
+      DB_USER: team1
+      DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
+      DB_NAME: team1db
+      DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
