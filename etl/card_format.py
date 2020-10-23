@@ -1,11 +1,13 @@
 def card_num_format(card_num_list):
     num_star = [] 
     for num in card_num_list:
-        if len(num) == 0:
+        if not num or num.isspace():
             num_star.append(None)
-        else:
+        elif num.isnumeric() and 16 >= len(num) >= 12:
             format_card = num[-4:].rjust(len(num), "*")
             num_star.append(format_card)
+        else:
+            print(f"Card Number does not meet requirement: {num}")
 
     return num_star
 
