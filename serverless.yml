@@ -1,4 +1,4 @@
-service: redshift-final-demo
+service: team-1-final-project
 plugins:
   - serverless-python-requirements
 
