@@ -71,7 +71,7 @@ def start(event, context):
 
     data = read_from_s3("cafe-data-data-pump-dev-team-1", "aberdeen_11-10-2020_19-49-26.csv")
     print(data)
-    dict_ = generate_dictionary(data)
+    #dict_ = generate_dictionary(data)
     #debug_prints(dict_)
     
 
