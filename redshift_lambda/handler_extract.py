@@ -16,6 +16,7 @@ def start(event, context):
     print(os.getenv("DB_PASS"))
     print(os.getenv("DB_NAME"))
     print(os.getenv("DB_CLUSTER"))
+    print("-end of environment variable prints-")
 
     host = os.getenv("DB_HOST")
     port = int(os.getenv("DB_PORT"))
@@ -25,12 +26,15 @@ def start(event, context):
     cluster = os.getenv("DB_CLUSTER")
 
     try:
+        print("start of credential establishment")
         client = boto3.client('redshift')
+        print("client received")
         creds = client.get_cluster_credentials(# Lambda needs these permissions as well DataAPI permissions
             DbUser=user,
             DbName=db,
             ClusterIdentifier=cluster,
             DurationSeconds=3600) # Length of time access is granted
+        print("credentials established")
     except Exception as ERROR:
         print("Credentials Issue: " + str(ERROR))
         sys.exit(1)
