@@ -10,7 +10,7 @@ def clean_total_price(raw_list):
     cleaned_total_price = [float(price) for price in raw_list]
     return cleaned_total_price
 
-print(clean_total_price(mock_data["total_price"]))
+# print(clean_total_price(mock_data["total_price"]))
 
 #SQL DATETIME - format: YYYY-MM-DD HH:MI:SS
 #Incoming format: 11/10/2020 08:11
@@ -20,7 +20,7 @@ def clean_datetime(raw_list):
         cleaned_datetime.append(datetime[6:10] + "-" + datetime[3:5] + "-" + datetime[0:2] + " " + datetime[11:16] + ":00")
     return cleaned_datetime
 
-print(clean_datetime(mock_data["datetime"]))
+# print(clean_datetime(mock_data["datetime"]))
 
 
 
