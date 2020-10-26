@@ -31,8 +31,8 @@ def create_database_tables(filepath, database_name):
     finally:
         connection.close()
 
-data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen", "Aberdeen", "Aberdeen"], "fname": ["John", "Maria", "Jack", "Matt"], "lname": ["Doe", "Johnson", "Bobby", "Mac"],
- "purchase": [dict], "total_price": [4.25], "payment_method": ["CARD"], "card_number": ["************1234"]}
+data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen", "Aberdeen", "Aberdeen"], "fname": ["John", "Maria", "Jack"], "lname": ["Doe", "Johnson", "Bobby"],
+ "purchase": [dict], "total_price": [4.25, 2.10, 3.60], "payment_method": ["CARD","CARD", "CASH"], "card_number": ["************1234","************1111" , '']}
 
 sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
  "drink_price": [2.5, 1.75]}
@@ -40,7 +40,7 @@ sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"],
 def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
     try:
-        #data
+        #extracting data from dict format to format more suitable for MySQL statements
         first_names  = data["fname"]
         last_names = data["lname"]
         customer_names = list(zip(first_names, last_names))
@@ -49,32 +49,47 @@ def insert_data_into_tables(data):
         unique_locations = list(set(locations))
 
         datetimes = data["datetime"]
+
         total_prices = data["total_price"]
         payment_methods = data["payment_method"]
         card_numbers = data["card_number"]
+        payments = list(zip(total_prices, payment_methods, card_numbers))
+        
         #purchases still need restructure
         purchases = data["purchase"] #list of dictionary
 
         #making connection to database
         with connection.cursor() as cursor:
-            #insert into tables in correct order
+            #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
             #tier 1
-            #insert into customer table values
-            
-            sql_command = f'INSERT INTO `Customers` (`Forename`, `Surname`) VALUES (%s, %s)'
-            cursor.executemany(sql_command, customer_names)
 
-            #insert into cafes table values locations
-            print("enre")
-            sql_command2 = f'INSERT INTO `Cafe_locations` (`Location_name`) VALUES (%s)'
-            print("feqfqe")
-            cursor.executemany(sql_command2, unique_locations)
-            print("fwq")
+            #inserting data into customer table
+            sql_command_insert_data_into_table = 'INSERT INTO `Customers` (`Forename`, `Surname`) VALUES (%s, %s)'
+            cursor.executemany(sql_command_insert_data_into_table, customer_names)
+
+            #inserting data into cafes locations table
+            sql_command_insert_data_into_table = 'INSERT INTO `Cafe_locations` (`Location_name`) VALUES (%s)'
+            cursor.executemany(sql_command_insert_data_into_table, unique_locations)
 
             #tier 2
-            #Time table
-            #payments table
+
+            #inserting data into payments table
+            #selecting corresponding customer ids
+            cursor.execute('SELECT c.Customer_id FROM Customers as c;')
+            customer_ids = [row[0] for row in cursor.fetchall()]
+
+            #reformatting data --> each customer_id with customer's payment info in a tuple
+            payments_info = list(zip(customer_ids, total_prices, payment_methods, card_numbers))
+            
+            #inserting payment info into payments table
+            sql_command_insert_data_into_table = """INSERT INTO `Payments` (`Customer_id`,`Total_amount`,`Payment_type`,`Card_number`) VALUES (%s, %s, %s,%s) ;"""
+            cursor.executemany( sql_command_data_insert_into_table, payments_info)
+
+            #inserting data into time table
+            sql_command_insert_data_into_table = 'INSERT INTO `Time` (`datetime`) VALUES (%s)'
+            cursor.executemany(sql_command_insert_data_into_table, datetimes)
+
             #Items table
 
             #tier 3
