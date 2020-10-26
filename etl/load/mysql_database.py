@@ -57,11 +57,16 @@ def insert_data_into_tables(data):
             #insert into table customer values
             #insert into cafes table values locations
             #use this command
-            cursor.executemany(operation)
+            cursor.executemany(command, data)
 
             #tier 2
+            #Time table
+            #payments table
+            #Items table
 
             #tier 3
+            #Orders table
+            
     except Exception as e:
         #connection.rollback() so when errors occur integrity of data perserved?
         print(f"Exception Error: {e}")
