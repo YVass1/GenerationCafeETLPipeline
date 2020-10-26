@@ -73,7 +73,6 @@ def start(event, context):
     print(data)
     #dict_ = generate_dictionary(data)
     #debug_prints(dict_)
-    
 
 
 ### our ETL code is below this point.
