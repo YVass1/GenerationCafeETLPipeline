@@ -40,10 +40,11 @@ sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"],
 def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
     try:
-        #data lists [("john"),("maria")]
+        #data
         first_names  = data["fname"]
-
         last_names = data["lname"]
+        customer_names = list(zip(first_names, last_names))
+        
         locations = data["location"]
         datetimes = data["datetime"]
         total_prices = data["total_price"]
@@ -52,18 +53,17 @@ def insert_data_into_tables(data):
         #purchases still need restructure
         purchases = data["purchase"] #list of dictionary
 
-        print(list(zip(first_names, last_names)))
-
         #making connection to database
         with connection.cursor() as cursor:
-            pass
             #insert into tables in correct order
+
             #tier 1
             #insert into table customer values
+            
+            command = f'INSERT INTO `Customers` (`Forename`, `Surname`)VALUES (%s, %s)'
+            cursor.executemany(command, customer_names)
+
             #insert into cafes table values locations
-            #use this command
-            #command = f'INSERT INTO tab_name {col_name} VALUES (value1)
-            #cursor.executemany(command)
 
             #tier 2
             #Time table
