@@ -31,7 +31,7 @@ def create_database_tables(filepath, database_name):
     finally:
         connection.close()
 
-data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen"], "fname": ["John", "Maria"], "lname": ["Doe"],
+data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen", "Aberdeen", "Aberdeen"], "fname": ["John", "Maria", "Jack", "Matt"], "lname": ["Doe", "Johnson", "Bobby", "Mac"],
  "purchase": [dict], "total_price": [4.25], "payment_method": ["CARD"], "card_number": ["************1234"]}
 
 sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
@@ -44,8 +44,10 @@ def insert_data_into_tables(data):
         first_names  = data["fname"]
         last_names = data["lname"]
         customer_names = list(zip(first_names, last_names))
-        
+
         locations = data["location"]
+        unique_locations = list(set(locations))
+
         datetimes = data["datetime"]
         total_prices = data["total_price"]
         payment_methods = data["payment_method"]
@@ -58,12 +60,17 @@ def insert_data_into_tables(data):
             #insert into tables in correct order
 
             #tier 1
-            #insert into table customer values
+            #insert into customer table values
             
-            command = f'INSERT INTO `Customers` (`Forename`, `Surname`)VALUES (%s, %s)'
-            cursor.executemany(command, customer_names)
+            sql_command = f'INSERT INTO `Customers` (`Forename`, `Surname`) VALUES (%s, %s)'
+            cursor.executemany(sql_command, customer_names)
 
             #insert into cafes table values locations
+            print("enre")
+            sql_command2 = f'INSERT INTO `Cafe_locations` (`Location_name`) VALUES (%s)'
+            print("feqfqe")
+            cursor.executemany(sql_command2, unique_locations)
+            print("fwq")
 
             #tier 2
             #Time table
@@ -74,7 +81,7 @@ def insert_data_into_tables(data):
             #Orders table
 
     except Exception as e:
-        #connection.rollback() so when errors occur integrity of data perserved?
+        #connection.rollback() so when errors occurs integrity of data perserved?
         print(f"Exception Error: {e}")
     finally:
         connection.close()
