@@ -39,24 +39,31 @@ sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"],
 def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
     try:
+        #data lists
+        first_names  = data["fname"]
+        last_names = data["lname"]
+        locations = data["location"]
+        datetimes = data["datetime"]
+        total_prices = data["total_price"]
+        payment_methods = data["payment_method"]
+        card_numbers = data["card_number"]
+        #purchases still need restructure
+        purchases = data["purchase"] #list of dictionary
+
+        #making connection to database
         with connection.cursor() as cursor:
-                #make connection
+            #insert into tables in correct order
+            #tier 1
+            #insert into table customer values
+            #insert into cafes table values locations
+            #use this command
+            cursor.executemany(operation)
 
-                #tier 1
-                first_names  = data["fname"]
-                last_names = data["lname"]
-                #insert into table customer values
-                locations = data["location"]
-                #insert into cafes table values locations
-                cursor.executemany(operation)
+            #tier 2
 
-                #tier 2
-
-                #tier 3
-                
-
+            #tier 3
     except Exception as e:
-        #connection.rollback()
+        #connection.rollback() so when errors occur integrity of data perserved?
         print(f"Exception Error: {e}")
     finally:
         connection.close()
