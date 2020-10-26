@@ -25,34 +25,34 @@ def start(event, context):
     db = os.getenv("DB_NAME")
     cluster = os.getenv("DB_CLUSTER")
 
-    try:
-        print("start of credential establishment")
-        client = boto3.client('redshift')
-        print("client received")
-        creds = client.get_cluster_credentials(# Lambda needs these permissions as well DataAPI permissions
-            DbUser=user,
-            DbName=db,
-            ClusterIdentifier=cluster,
-            DurationSeconds=3600) # Length of time access is granted
-        print("credentials established")
-    except Exception as ERROR:
-        print("Credentials Issue: " + str(ERROR))
-        sys.exit(1)
+    # try:
+    #     print("start of credential establishment")
+    #     client = boto3.client('redshift')
+    #     print("client received")
+    #     creds = client.get_cluster_credentials(# Lambda needs these permissions as well DataAPI permissions
+    #         DbUser=user,
+    #         DbName=db,
+    #         ClusterIdentifier=cluster,
+    #         DurationSeconds=3600) # Length of time access is granted
+    #     print("credentials established")
+    # except Exception as ERROR:
+    #     print("Credentials Issue: " + str(ERROR))
+    #     sys.exit(1)
 
-    print('got credentials')
+    # print('got credentials')
 
-    try:
-        conn = psycopg2.connect(
-            dbname=db,
-            user=creds["DbUser"],
-            password=creds["DbPassword"],
-            port=port,
-            host=host)
-    except Exception as ERROR:
-        print("Connection Issue: " + str(ERROR))
-        sys.exit(1)
+    # try:
+    #     conn = psycopg2.connect(
+    #         dbname=db,
+    #         user=creds["DbUser"],
+    #         password=creds["DbPassword"],
+    #         port=port,
+    #         host=host)
+    # except Exception as ERROR:
+    #     print("Connection Issue: " + str(ERROR))
+    #     sys.exit(1)
 
-    print('connected')
+    # print('connected')
     
     ### This is what Stuart had in the handler.py from the start.
     # try:
@@ -72,7 +72,7 @@ def start(event, context):
     data = read_from_s3("cafe-data-data-pump-dev-team-1", "aberdeen_11-10-2020_19-49-26.csv")
     print(data)
     dict_ = generate_dictionary(data)
-    debug_prints(dict_)
+    #debug_prints(dict_)
     
 
 
