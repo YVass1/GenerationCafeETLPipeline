@@ -17,6 +17,7 @@ def create_database(database_name):
         connection.close()
 
 def create_database_tables(filepath, database_name):
+    global mysql_db
     mysql_db = db_connect.MYSQL_database(database_name)
     connection = mysql_db.make_connection()
     try:
@@ -30,7 +31,7 @@ def create_database_tables(filepath, database_name):
     finally:
         connection.close()
 
-data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen"], "fname": ["John"], "lname": ["Doe"],
+data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen"], "fname": ["John", "Maria"], "lname": ["Doe"],
  "purchase": [dict], "total_price": [4.25], "payment_method": ["CARD"], "card_number": ["************1234"]}
 
 sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
@@ -39,8 +40,9 @@ sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"],
 def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
     try:
-        #data lists
+        #data lists [("john"),("maria")]
         first_names  = data["fname"]
+        print(tuple(first_names))
         last_names = data["lname"]
         locations = data["location"]
         datetimes = data["datetime"]
@@ -52,12 +54,14 @@ def insert_data_into_tables(data):
 
         #making connection to database
         with connection.cursor() as cursor:
+            pass
             #insert into tables in correct order
             #tier 1
             #insert into table customer values
             #insert into cafes table values locations
             #use this command
-            cursor.executemany(command, data)
+            #command = f'INSERT INTO tab_name {col_name} VALUES (value1)
+            #cursor.executemany(command)
 
             #tier 2
             #Time table
@@ -66,7 +70,7 @@ def insert_data_into_tables(data):
 
             #tier 3
             #Orders table
-            
+
     except Exception as e:
         #connection.rollback() so when errors occur integrity of data perserved?
         print(f"Exception Error: {e}")
@@ -76,3 +80,4 @@ def insert_data_into_tables(data):
 if __name__ == "__main__":
     create_database("final_project_team1")
     create_database_tables(sql_code_filepath, "final_project_team1")
+    insert_data_into_tables(data)

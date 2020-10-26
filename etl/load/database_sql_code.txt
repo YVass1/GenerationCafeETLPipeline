@@ -2,9 +2,9 @@ DROP TABLE IF EXISTS `Orders`;
 
 CREATE TABLE `Orders` (
 	`Order_id` INT NOT NULL,
-	`Item_id` INT NOT NULL AUTO_INCREMENT,
-	`Payment_id` INT NOT NULL AUTO_INCREMENT,
-	`Time_id` INT NOT NULL AUTO_INCREMENT,
+	`Item_id` INT,
+	`Payment_id` INT,
+	`Time_id` INT,
 	PRIMARY KEY (`Order_id`)
 );
 
@@ -12,11 +12,11 @@ DROP TABLE IF EXISTS `Items`;
 
 CREATE TABLE `Items` (
 	`Item_id` INT NOT NULL,
-	`Location_name` varchar(100) NOT NULL,
+	`Location_name` varchar(100),
 	`Price` FLOAT(7) NOT NULL,
-	`Drink_type` varchar(100) NOT NULL,
-	`Drink_flavour` varchar(100) NOT NULL,
-	`Drink_size` varchar(100) NOT NULL,
+	`Drink_type` varchar(100),
+	`Drink_flavour` varchar(100),
+	`Drink_size` varchar(100),
 	PRIMARY KEY (`Item_id`)
 );
 
@@ -31,10 +31,10 @@ DROP TABLE IF EXISTS `Time`;
 
 CREATE TABLE `Time` (
 	`Time_id` INT NOT NULL AUTO_INCREMENT,
-	`datetime` DATETIME NOT NULL,
-	`Day_id` INT NOT NULL AUTO_INCREMENT,
-	`Month_id` INT NOT NULL AUTO_INCREMENT,
-	`Year_id` INT NOT NULL AUTO_INCREMENT,
+	`datetime` DATETIME,
+	`Day_id` INT,
+	`Month_id` INT,
+	`Year_id` INT,
 	PRIMARY KEY (`Time_id`)
 );
 
@@ -42,9 +42,9 @@ DROP TABLE IF EXISTS `Payments`;
 
 CREATE TABLE `Payments` (
 	`Payment_id` INT NOT NULL AUTO_INCREMENT,
-	`Customer_id` INT NOT NULL AUTO_INCREMENT,
-	`Total_amount` FLOAT(7) NOT NULL,
-	`Payment_type` varchar(100) NOT NULL,
+	`Customer_id` INT,
+	`Total_amount` FLOAT(7),
+	`Payment_type` varchar(100),
 	`Card_number` VARCHAR(255),
 	PRIMARY KEY (`Payment_id`)
 );
@@ -53,32 +53,32 @@ DROP TABLE IF EXISTS `Customers`;
 
 CREATE TABLE `Customers` (
 	`Customer_id` INT NOT NULL AUTO_INCREMENT,
-	`Forename` varchar(100) NOT NULL,
-	`Surname` varchar(100) NOT NULL,
+	`Forename` varchar(100),
+	`Surname` varchar(100),
 	PRIMARY KEY (`Customer_id`)
 );
 
 DROP TABLE IF EXISTS `Day`;
 
 CREATE TABLE `Day` (
-	`Day_id` BINARY NOT NULL AUTO_INCREMENT,
-	`Day` varchar(25) NOT NULL,
+	`Day_id` INT NOT NULL AUTO_INCREMENT,
+	`Day` varchar(25),
 	PRIMARY KEY (`Day_id`)
 );
 
 DROP TABLE IF EXISTS `Year`;
 
 CREATE TABLE `Year` (
-	`Year_id` BINARY NOT NULL AUTO_INCREMENT,
-	`Year` INT(4) NOT NULL,
+	`Year_id` INT NOT NULL AUTO_INCREMENT,
+	`Year` INT(4),
 	PRIMARY KEY (`Year_id`)
 );
 
 DROP TABLE IF EXISTS `Month`;
 
 CREATE TABLE `Month` (
-	`Month_id` BINARY NOT NULL AUTO_INCREMENT,
-	`Month` varchar(25) NOT NULL,
+	`Month_id` INT NOT NULL AUTO_INCREMENT,
+	`Month` varchar(25),
 	PRIMARY KEY (`Month_id`)
 );
 
