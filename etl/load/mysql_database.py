@@ -40,11 +40,21 @@ def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
     try:
         with connection.cursor() as cursor:
-            for col in data.items():
-                if col == "purchase":
-                    continue
-                else:
-                    cursor.executemany(operation)
+                #make connection
+
+                #tier 1
+                first_names  = data["fname"]
+                last_names = data["lname"]
+                #insert into table customer values
+                locations = data["location"]
+                #insert into cafes table values locations
+                cursor.executemany(operation)
+
+                #tier 2
+
+                #tier 3
+                
+
     except Exception as e:
         #connection.rollback()
         print(f"Exception Error: {e}")
