@@ -14,7 +14,7 @@ package:
 functions:
   redshift-lambda:
     runtime: python3.8
-    handler: handler.start
+    handler: handler_extract.start
     module: redshift_lambda
     vpc:
       securityGroupIds:
