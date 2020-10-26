@@ -42,7 +42,7 @@ def insert_data_into_tables(data):
     try:
         #data lists [("john"),("maria")]
         first_names  = data["fname"]
-        print(tuple(first_names))
+
         last_names = data["lname"]
         locations = data["location"]
         datetimes = data["datetime"]
@@ -51,6 +51,8 @@ def insert_data_into_tables(data):
         card_numbers = data["card_number"]
         #purchases still need restructure
         purchases = data["purchase"] #list of dictionary
+
+        print(list(zip(first_names, last_names)))
 
         #making connection to database
         with connection.cursor() as cursor:
