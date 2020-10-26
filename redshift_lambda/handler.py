@@ -50,17 +50,21 @@ def start(event, context):
 
     print('connected')
     
-    # try:
-    #     cursor = conn.cursor()
-    #     cursor.execute("create table test_table (id int)")
-    #     cursor.close()
-    #     conn.commit()
-    #     conn.close()
-    # except Exception as ERROR:
-    #     print("Execution Issue: " + str(ERROR))
-    #     sys.exit(1)
+    ### This is what Stuart had in the handler.py from the start.
+    try:
+        cursor = conn.cursor()
+        cursor.execute("create table test_table (id int)")
+        cursor.close()
+        conn.commit()
+        conn.close()
 
-    # print('executed statement')
+    except Exception as ERROR:
+        print("Execution Issue: " + str(ERROR))
+        sys.exit(1)
+
+    print('executed statement')
+
+
 
     rows = get_raw_csv_data()
     data = generate_dictionary(rows)
@@ -68,6 +72,7 @@ def start(event, context):
     test = transform_purchases(["Large Flavoured latte - Gingerbread - 2.85, Coffee - Hazelnut - 2.85", "Large Flavoured latte - Vanilla - 2.85", "Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Vanilla - 2.85", "Large Flavoured latte - Gingerbread - 2.85"])
 
 
+### our ETL code is below this point.
 
 def get_raw_csv_data():
     filepath = "aberdeen_11-10-2020_19-49-26.csv"
