@@ -37,7 +37,7 @@ sub_data =  [{"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"]
  "drink_price": [2.5, 1.75]}, {"drink_size": ["small", "medium"], "drink_type": ["latte", "coffee"], "drink_flavour": ["peppermint", "black"],
  "drink_price": [10.5, 1.75] }]
 
- data = {"datetime": ["11/10/2020 08:11", "26/10/2020 11:06"], "location": ["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"], "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CARD","CARD"], "card_number" : ["************1234","************1111"]}
+data = {"datetime": ["11/10/2020 08:11", "26/10/2020 11:06"], "location": ["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"], "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CARD","CARD"], "card_number" : ["************1234","************1111"]}
 
 
 def reformatting_data_for_sql(data):
@@ -147,10 +147,10 @@ def insert_data_into_tables(data):
             #location_names = [row[0] for row in cursor.fetchall()]
 
 
-            items_info = [list(zip(location_names, prices, drink_types, drink_flavours, drink_sizes))]
-            unique_items = list(set(items_info))
-            sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, `Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
-            cursor.executemany(sql_command_insert_data_into_table, unique_items)
+            #items_info = [list(zip(location_names, prices, drink_types, drink_flavours, drink_sizes))]
+            #unique_items = list(set(items_info))
+            #sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, #`Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
+            #cursor.executemany(sql_command_insert_data_into_table, unique_items)
             
             #tier 3
             #Orders table
