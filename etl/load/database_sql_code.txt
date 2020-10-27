@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS `Orders`;
 
 CREATE TABLE `Orders` (
-	`Order_id` INT NOT NULL,
+	`Order_id` INT NOT NULL AUTO_INCREMENT,
 	`Item_id` INT,
 	`Payment_id` INT,
 	`Time_id` INT,
@@ -11,7 +11,7 @@ CREATE TABLE `Orders` (
 DROP TABLE IF EXISTS `Items`;
 
 CREATE TABLE `Items` (
-	`Item_id` INT NOT NULL,
+	`Item_id` INT NOT NULL AUTO_INCREMENT,
 	`Location_name` varchar(100),
 	`Price` FLOAT(7) NOT NULL,
 	`Drink_type` varchar(100),

@@ -1,6 +1,7 @@
 import etl.load.mysql_database_connection as db_connect
 import re
 from datetime import datetime
+import numpy as np
 
 #CONSTANTS NEEDED
 sql_code_filepath = './etl/load/database_sql_code.txt'
@@ -63,13 +64,14 @@ def reformatting_data_for_sql(data):
         card_numbers = data["card_number"]
         
         #purchases still need restructuring
-        #re arrange so tuples of drink + their info and then all can be checked for unique items
 
-        all_purchases = [list(zip(purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] #needs flattening potententially
+        all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
+        print(all_purchases)
+        x = [tup  for list_of_tup in all_purchases for tup in list_of_tup]
+        unique_items = list(set(x))
+        print(unique_items)
 
-        #also need to connect drink items with customer - need later for filling orders table
-
-        return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers
+        return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases
 
 def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
@@ -78,7 +80,7 @@ def insert_data_into_tables(data):
         with connection.cursor() as cursor:
 
             #reformatting data for sql
-            datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years, unique_years, total_prices, payment_methods, card_numbers = reformatting_data_for_sql(data)
+            datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years, unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases = reformatting_data_for_sql(data)
 
             #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
@@ -143,15 +145,15 @@ def insert_data_into_tables(data):
             #grabbing cafe location name where drink type ordered location matches
             #cursor.execute('SELECT cafe.Location_name FROM Cafe_Locations as cafe WHERE cafe.Location_name = %s; locations')
             #location_names = [row[0] for row in cursor.fetchall()]
-
-
             #items_info = [list(zip(location_names, prices, drink_types, drink_flavours, drink_sizes))]
             #unique_items = list(set(items_info))
-            #sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, #`Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
-            #cursor.executemany(sql_command_insert_data_into_table, unique_items)
+
+            sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, `Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
+            cursor.executemany(sql_command_insert_data_into_table, unique_items)
             
             #tier 3
             #Orders table
+            
 
     except Exception as e:
         #connection.rollback() so when errors occurs integrity of data perserved?
