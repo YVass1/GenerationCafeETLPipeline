@@ -32,11 +32,12 @@ def create_database_tables(filepath, database_name):
     finally:
         connection.close()
 
-data = {"datetime": ["11/10/2020 08:11", "26/10/2020 11:06", "27/10/2020 14:02"], "location": ["Aberdeen", "Aberdeen", "Aberdeen"], "fname": ["John", "Maria", "Jack"], "lname": ["Doe", "Johnson", "Bobby"],
- "purchase": [dict], "total_price": [4.25, 2.10, 3.60], "payment_method": ["CARD","CARD", "CASH"], "card_number": ["************1234","************1111" , '']}
 
-sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
- "drink_price": [2.5, 1.75]}
+sub_data =  [{"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
+ "drink_price": [2.5, 1.75]}, {"drink_size": ["small", "medium"], "drink_type": ["latte", "coffee"], "drink_flavour": ["peppermint", "black"],
+ "drink_price": [10.5, 1.75] }]
+
+ data = {"datetime": ["11/10/2020 08:11", "26/10/2020 11:06"], "location": ["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"], "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CARD","CARD"], "card_number" : ["************1234","************1111"]}
 
 
 def reformatting_data_for_sql(data):
@@ -62,7 +63,13 @@ def reformatting_data_for_sql(data):
         card_numbers = data["card_number"]
         
         #purchases still need restructure
-        purchases = data["purchase"] #list of dictionary
+        purchases_dict = data["purchase"] #list of dictionary
+
+        prices = [purchase["drink_price"] for purchase in data["purchase"]]
+        drink_types = [purchase["drink_type"] for purchase in data["purchase"]]
+        print(drink_types)
+        drink_flavours = [purchase["drink_flavour"] for purchase in data["purchase"]]
+        drink_sizes = [purchase["drink_size"] for purchase in data["purchase"]]
 
         return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers
 
@@ -134,6 +141,16 @@ def insert_data_into_tables(data):
             cursor.executemany(sql_command_insert_data_into_table, full_datetime_info)
 
             #Items table
+
+            #grabbing cafe location name where drink type ordered location matches
+            #cursor.execute('SELECT cafe.Location_name FROM Cafe_Locations as cafe WHERE cafe.Location_name = %s; locations')
+            #location_names = [row[0] for row in cursor.fetchall()]
+
+
+            items_info = [list(zip(location_names, prices, drink_types, drink_flavours, drink_sizes))]
+            unique_items = list(set(items_info))
+            sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, `Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
+            cursor.executemany(sql_command_insert_data_into_table, unique_items)
             
             #tier 3
             #Orders table
