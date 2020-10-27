@@ -67,13 +67,11 @@ def reformatting_data_for_sql(data):
         #all_purchases = [[("edinburgh", 2.00, "tea", "black", "medium"), ("edinburgh, 4.00, "coffee", "large")],[("aberdeen", 4.00, "coffee", "large")]]
 
         all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
-        print(f"\n {all_purchases} \n")
+        #print(f"\n {all_purchases} \n")
         x = [tup for list_of_tup in all_purchases for tup in list_of_tup]
-        print(f"{x} \n")
         unique_items = list(set(x))
-        print(unique_items)
 
-        return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases
+        return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, x
 
 def insert_data_into_tables(data):
     connection = mysql_db.make_connection()
@@ -82,7 +80,7 @@ def insert_data_into_tables(data):
         with connection.cursor() as cursor:
 
             #reformatting data for sql
-            datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years, unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases = reformatting_data_for_sql(data)
+            datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years, unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, x = reformatting_data_for_sql(data)
 
             #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
@@ -149,21 +147,25 @@ def insert_data_into_tables(data):
             
             #tier 3
             #Orders table
-            
-            variables = [("drink_type", "drink_flavour", "location", "price", "drink_size"),("drink_type", "drink_flavour", "location", "price", "drink_size"),()]
-
-            item_ids = []
-            for var in variables:
-                cursor.execute(f'SELECT i.Item_id FROM Items as i WHERE i.Drink_type = %s AND i.Drink_flavour = %s AND i.location = %s AND i.Drink_price = %s AND Drink_size = %s', var) # var = ("drink_type", "drink_flavour", "location", "price", "drink_size")
-                items_ids.append(cursor.fetchone()[0])
+     
+            print(x)
 
             #select items ids 
+            item_ids = []
+            for var in x:
+                cursor.execute("""SELECT i.Item_id FROM  
+                Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                AND Drink_size = %s""", var)
+                item_ids.append(cursor.fetchone()[0])
+            print(item_ids)
+
             #select payment ids 
             #select time_ids
 
+
             #order_info = [(`Item_id`,`Payment_id`,`Time_id`),(),(),()]
-            sql_command_insert_data_into_table = """INSERT INTO `Orders` (`Item_id`,`Payment_id`,`Time_id`) VALUES (%s, %s, %s) ;"""
-            cursor.executemany(sql_command_insert_data_into_table, orders_info)
+            #sql_command_insert_data_into_table = """INSERT INTO `Orders` (`Item_id`,`Payment_id`,`Time_id`) VALUES (%s, %s, %s) ;#"""
+            #cursor.executemany(sql_command_insert_data_into_table, orders_info)
 
 
     except Exception as e:
