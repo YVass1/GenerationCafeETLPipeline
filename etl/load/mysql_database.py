@@ -129,10 +129,8 @@ def insert_data_into_tables(data):
                 year_ids.append(cursor.fetchone()[0])
         
             full_datetime_info = list(zip(datetimes, day_ids, month_ids, year_ids))
-            print(type(full_datetime_info[0][2]))
-            print(full_datetime_info[0][2])
 
-            sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE("11/10/2020 08:11", "%d/%m/%Y %H:%i"), %s,%s,%s);"""
+            sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE(%s, "%%d/%%m/%%Y %%H:%%i"), %s,%s,%s);"""
             cursor.executemany(sql_command_insert_data_into_table, full_datetime_info)
 
             #Items table
