@@ -62,18 +62,12 @@ def reformatting_data_for_sql(data):
         payment_methods = data["payment_method"]
         card_numbers = data["card_number"]
         
-        #purchases still need restructure
-        purchases_dict = data["purchase"] #list of dictionary
-
-        prices = [purchase["drink_price"] for purchase in data["purchase"]]
-        drink_types = [purchase["drink_type"] for purchase in data["purchase"]]
-        drink_flavours = [purchase["drink_flavour"] for purchase in data["purchase"]]
-        drink_sizes = [purchase["drink_size"] for purchase in data["purchase"]]
-
+        #purchases still need restructuring
         #re arrange so tuples of drink + their info and then all can be checked for unique items
 
+        all_purchases = [list(zip(purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] #needs flattening potententially
+
         #also need to connect drink items with customer - need later for filling orders table
-        print(list(zip(first_names, last_names,drink_types, drink_flavours, drink_sizes, prices)))
 
         return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers
 
