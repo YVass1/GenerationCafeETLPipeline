@@ -63,7 +63,7 @@ def reformatting_data_for_sql(data):
         payment_methods = data["payment_method"]
         card_numbers = data["card_number"]
         
-        #purchases still need restructuring
+        #purchases may still need restructuring
 
         all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
         print(all_purchases)
