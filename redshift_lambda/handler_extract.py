@@ -7,19 +7,18 @@ import boto3
 def start(event, context):
     print("hello world")
 
+    #EXTRACT
     data = read_from_s3("cafe-data-data-pump-dev-team-1", "aberdeen_11-10-2020_19-49-26.csv")
     lines = convert_data_to_lines(data)
     split_orders = split_lines(lines)
+    clean_split_orders = remove_whitespace_and_quotes(split_orders)
+    combined_purchase_orders = combine_purchases(clean_split_orders)
+    
+    dict_ = generate_dictionary(combined_purchase_orders)
+    debug_prints(dict_)
 
-    for order in split_orders:
-        print(order)
-    #print(data)
-    #dict_ = generate_dictionary(data)
-    #debug_prints(dict_)
 
-
-### our ETL code is below this point.
-
+#EXTRACT
 def read_from_s3(bucket, key):
     s3 = boto3.client('s3')
     s3_object = s3.get_object(Bucket=bucket,
@@ -30,8 +29,8 @@ def read_from_s3(bucket, key):
 
 
 def convert_data_to_lines(data):
-    data_without_brackets = data.replace("['", "").replace("']", "")
-    return data_without_brackets.split("\n")
+    return_list = data.split("\n")
+    return return_list
     
 
 def split_lines(lines):
@@ -39,19 +38,53 @@ def split_lines(lines):
     
     for line in lines:
         if len(line) > 10:
-            return_list = line.split("', '")
-
+            return_list.append(line.split(","))
+    
     return return_list
 
 
-def generate_dictionary(csv_strings):
+def remove_whitespace_and_quotes(lists):
+    return_lists = []
+    
+    for list_ in lists:
+        new_list = []
+        
+        for item in list_:
+            new_list.append(item.replace('"', '').strip())
+            
+        return_lists.append(new_list)
+    
+    return return_lists
+
+
+def combine_purchases(orders):
+    return_lists = []
+    
+    for order in orders:
+        NON_PURCHASE_ITEM_COUNT = 6
+        order_item_count = len(order)
+        
+        purchase_items = order[3:-3]
+        combined_purchase = combine_items_into_string(purchase_items)
+        
+        new_list = order[:3]
+        new_list.append(combined_purchase)
+        new_list.append(order[-3])
+        new_list.append(order[-2])
+        new_list.append(order[-1])
+        
+        return_lists.append(new_list)
+    
+    return return_lists
+
+
+def combine_items_into_string(items):
+    separator = ', '
+    return separator.join(items)
+
+
+def generate_dictionary(rows):
     data = {"datetime": [], "location": [], "customer_name": [], "purchase": [], "total_price": [], "payment_method": [], "card_number": []}
-    
-    rows = []
-    
-    for string in csv_strings:
-        new_list = convert_csv_string_to_list(string)
-        rows.append(new_list)
     
     for row in rows:
         data["datetime"].append(row[0])
