@@ -39,7 +39,7 @@ def split_lines(lines):
     
     for line in lines:
         if len(line) > 10:
-            return_list = string_without_brackets.split("', '")
+            return_list = line.split("', '")
 
     return return_list
 
