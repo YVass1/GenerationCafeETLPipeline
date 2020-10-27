@@ -142,18 +142,15 @@ def insert_data_into_tables(data):
 
             #Items table
 
-            #grabbing cafe location name where drink type ordered location matches
-            #cursor.execute('SELECT cafe.Location_name FROM Cafe_Locations as cafe WHERE cafe.Location_name = %s; locations')
-            #location_names = [row[0] for row in cursor.fetchall()]
-            #items_info = [list(zip(location_names, prices, drink_types, drink_flavours, drink_sizes))]
-            #unique_items = list(set(items_info))
-
             sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, `Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
             cursor.executemany(sql_command_insert_data_into_table, unique_items)
             
             #tier 3
             #Orders table
-            
+            sql_command_insert_data_into_table = """INSERT INTO `Orders` (`Item_id`,`Payment_id`,`Time_id`) VALUES (%s, %s, %s) ;"""
+
+            cursor.executemany(sql_command_insert_data_into_table, payments_info)
+
 
     except Exception as e:
         #connection.rollback() so when errors occurs integrity of data perserved?
