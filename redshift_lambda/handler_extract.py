@@ -35,7 +35,7 @@ def convert_data_to_lines(data):
     
 
 def split_lines(lines):
-    return return_list = []
+    return_list = []
     
     for line in lines:
         if len(line) > 10:
