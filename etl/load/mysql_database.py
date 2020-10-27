@@ -64,10 +64,12 @@ def reformatting_data_for_sql(data):
         card_numbers = data["card_number"]
         
         #purchases may still need restructuring
+        #all_purchases = [[("edinburgh", 2.00, "tea", "black", "medium"), ("edinburgh, 4.00, "coffee", "large")],[("aberdeen", 4.00, "coffee", "large")]]
 
         all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
-        print(all_purchases)
-        x = [tup  for list_of_tup in all_purchases for tup in list_of_tup]
+        print(f"\n {all_purchases} \n")
+        x = [tup for list_of_tup in all_purchases for tup in list_of_tup]
+        print(f"{x} \n")
         unique_items = list(set(x))
         print(unique_items)
 
@@ -147,9 +149,21 @@ def insert_data_into_tables(data):
             
             #tier 3
             #Orders table
-            sql_command_insert_data_into_table = """INSERT INTO `Orders` (`Item_id`,`Payment_id`,`Time_id`) VALUES (%s, %s, %s) ;"""
+            
+            variables = [("drink_type", "drink_flavour", "location", "price", "drink_size"),("drink_type", "drink_flavour", "location", "price", "drink_size"),()]
 
-            cursor.executemany(sql_command_insert_data_into_table, payments_info)
+            item_ids = []
+            for var in variables:
+                cursor.execute(f'SELECT i.Item_id FROM Items as i WHERE i.Drink_type = %s AND i.Drink_flavour = %s AND i.location = %s AND i.Drink_price = %s AND Drink_size = %s', var) # var = ("drink_type", "drink_flavour", "location", "price", "drink_size")
+                items_ids.append(cursor.fetchone()[0])
+
+            #select items ids 
+            #select payment ids 
+            #select time_ids
+
+            #order_info = [(`Item_id`,`Payment_id`,`Time_id`),(),(),()]
+            sql_command_insert_data_into_table = """INSERT INTO `Orders` (`Item_id`,`Payment_id`,`Time_id`) VALUES (%s, %s, %s) ;"""
+            cursor.executemany(sql_command_insert_data_into_table, orders_info)
 
 
     except Exception as e:
