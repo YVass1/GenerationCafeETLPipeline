@@ -25,28 +25,28 @@ def clean_datetime(raw_list):
 
 
 # Tests
-def test_clean_total_price():
-    # Arrange
-    mock_list = [11, 2.80]
-    expected_output = [float(11), float(2.80)]
+# def test_clean_total_price():
+#     # Arrange
+#     mock_list = [11, 2.80]
+#     expected_output = [float(11), float(2.80)]
 
-    # Act
-    actual_output = clean_total_price(mock_list)
+#     # Act
+#     actual_output = clean_total_price(mock_list)
 
-    # Assert
-    assert expected_output == actual_output
+#     # Assert
+#     assert expected_output == actual_output
 
 
-def test_clean_datetime():
-    # Arrange
-    mock_list = ["11/10/2020 08:11", "11/10/2020 08:11"]
-    expected_output = ["2020-10-11 08:11:00", "2020-10-11 08:11:00"]
+# def test_clean_datetime():
+#     # Arrange
+#     mock_list = ["11/10/2020 08:11", "11/10/2020 08:11"]
+#     expected_output = ["2020-10-11 08:11:00", "2020-10-11 08:11:00"]
 
-    # Act
-    actual_output = clean_datetime(mock_list)
+#     # Act
+#     actual_output = clean_datetime(mock_list)
 
-    # Assert
-    assert expected_output == actual_output
+#     # Assert
+#     assert expected_output == actual_output
 
-if __name__ == "__main__":
-    pass
+# if __name__ == "__main__":
+#     pass
