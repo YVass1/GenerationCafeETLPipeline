@@ -14,8 +14,8 @@ class Test_make_drink_info_list(unittest.TestCase):
     @patch("transform_purchase.make_drink_info_list")
     def test_drink_list_returns_seperated(self, mock_make_drink_info_list):
         # Arrange
-        mock_split_info_list = ["Large Flavoured latte - Gingerbread - 2.85, Large Flavoured latte - Vanilla - 2.85, Large Latte - 2.45, Large Flavoured latte - Gingerbread - 2.85"]
-        expect = [['Large Flavoured latte', 'Gingerbread', '2.85'], ['Large Flavoured latte', 'Vanilla', '2.85'], ['Large Flavoured latte', 'Gingerbread', '2.85']]
+        mock_split_info_list = []
+        expect = []
 
         # Act
         actual = make_drink_info_list(mock_split_info_list)
