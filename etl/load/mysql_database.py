@@ -1,5 +1,6 @@
 import etl.load.mysql_database_connection as db_connect
 import re
+from datetime import datetime
 
 #CONSTANTS NEEDED
 sql_code_filepath = './etl/load/database_sql_code.txt'
@@ -31,16 +32,15 @@ def create_database_tables(filepath, database_name):
     finally:
         connection.close()
 
-data = {"datetime": ["11/10/2020 08:11"], "location": ["Aberdeen", "Aberdeen", "Aberdeen"], "fname": ["John", "Maria", "Jack"], "lname": ["Doe", "Johnson", "Bobby"],
+data = {"datetime": ["11/10/2020 08:11", "26/10/2020 11:06"], "location": ["Aberdeen", "Aberdeen", "Aberdeen"], "fname": ["John", "Maria", "Jack"], "lname": ["Doe", "Johnson", "Bobby"],
  "purchase": [dict], "total_price": [4.25, 2.10, 3.60], "payment_method": ["CARD","CARD", "CASH"], "card_number": ["************1234","************1111" , '']}
 
 sub_data =  {"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
  "drink_price": [2.5, 1.75]}
 
-def insert_data_into_tables(data):
-    connection = mysql_db.make_connection()
-    try:
-        #extracting data from dict format to format more suitable for MySQL statements
+
+def reformatting_data_for_sql(data):
+    #extracting data from dict format to format more suitable for MySQL statements
         first_names  = data["fname"]
         last_names = data["lname"]
         customer_names = list(zip(first_names, last_names))
@@ -49,17 +49,32 @@ def insert_data_into_tables(data):
         unique_locations = list(set(locations))
 
         datetimes = data["datetime"]
+        datetime_objects = [datetime.strptime(dtime, '%d/%m/%Y %H:%M') for dtime in datetimes]
+        days = [dtime.strftime("%A") for dtime in datetime_objects]
+        unique_days = list(set(days))
+        months = [dtime.strftime("%B") for dtime in datetime_objects]
+        unique_months = list(set(months))
+        years = [dtime.strftime("%Y") for dtime in datetime_objects]
+        unique_years = list(set(years))
 
         total_prices = data["total_price"]
         payment_methods = data["payment_method"]
         card_numbers = data["card_number"]
-        payments = list(zip(total_prices, payment_methods, card_numbers))
         
         #purchases still need restructure
         purchases = data["purchase"] #list of dictionary
 
+        return customer_names, unique_locations, unique_days, unique_months, unique_years, total_prices, payment_methods, card_numbers
+
+def insert_data_into_tables(data):
+    connection = mysql_db.make_connection()
+    try:
         #making connection to database
         with connection.cursor() as cursor:
+
+            #reformatting data for sql
+            customer_names, unique_locations, unique_days, unique_months, unique_years, total_prices, payment_methods, card_numbers = reformatting_data_for_sql(data)
+
             #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
             #tier 1
@@ -71,6 +86,15 @@ def insert_data_into_tables(data):
             #inserting data into cafes locations table
             sql_command_insert_data_into_table = 'INSERT INTO `Cafe_locations` (`Location_name`) VALUES (%s)'
             cursor.executemany(sql_command_insert_data_into_table, unique_locations)
+
+            #inserting data into day, month, year tables
+
+            sql_command_insert_data_into_table = "INSERT INTO `Day` (`Day`) VALUES (%s);"
+            cursor.executemany( sql_command_insert_data_into_table, unique_days)
+            sql_command_insert_data_into_table = "INSERT INTO `Month` (`Month`) VALUES (%s);"
+            cursor.executemany( sql_command_insert_data_into_table, unique_months)
+            sql_command_insert_data_into_table = "INSERT INTO `Year` (`Year`) VALUES (%s);"
+            cursor.executemany( sql_command_insert_data_into_table, unique_years)
 
             #tier 2
 
@@ -84,14 +108,15 @@ def insert_data_into_tables(data):
             
             #inserting payment info into payments table
             sql_command_insert_data_into_table = """INSERT INTO `Payments` (`Customer_id`,`Total_amount`,`Payment_type`,`Card_number`) VALUES (%s, %s, %s,%s) ;"""
-            cursor.executemany( sql_command_data_insert_into_table, payments_info)
+            cursor.executemany( sql_command_insert_data_into_table, payments_info)
 
-            #inserting data into time table
-            sql_command_insert_data_into_table = 'INSERT INTO `Time` (`datetime`) VALUES (%s)'
-            cursor.executemany(sql_command_insert_data_into_table, datetimes)
+            #Time table
+            #first need to check datetimes corresponding day/month/year and then grab its id from tables and then insert into time table
+            #First selecting corresponding data ids from Day, Month, Year tables for datetimes
+
 
             #Items table
-
+            
             #tier 3
             #Orders table
 
