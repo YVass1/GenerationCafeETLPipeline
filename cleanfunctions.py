@@ -1,4 +1,0 @@
-
-def clean():
-    ll
-clean()
