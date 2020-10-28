@@ -250,13 +250,11 @@ def insert_data_into_tables(data):
                         orders_info.append((order[0],a[0], order[2]))
                     else:
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items as i WHERE i.Location_name = %s AND i.Price = CAST(%s AS FLOAT) AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size= %s """, drink_order)
                         a = cursor.fetchone()
                         orders_info.append((order[0],a[0], order[2]))
 
-                    
-            
             sql_command_insert_data_into_table = """INSERT INTO `Orders` (Payment_id, Item_id, Time_id)  VALUES (%s, %s, %s) ;"""           
             cursor.executemany(sql_command_insert_data_into_table, orders_info)
 
