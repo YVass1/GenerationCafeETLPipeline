@@ -4,14 +4,13 @@ from card_format import card_num_format
 
 class Test_card_number_req(unittest.TestCase):
     @patch("card_format.card_num_format")
-    def test_last_four_digits_returned_from_card_number_format(self, mock_card_num_format):
+    def test_if_number_entered_incorrectly_returns_does_not_meet_requirement_message(self, mock_card_num_format):
         # Arrange
-        num_star = ['12345678912345678', '123456789123']
-        mock_card_num_format.return_value = 1
-        expect = f"Card Number does not meet requirement: {num_star}"
+        mock_num_star = ['12345678912345678', '12345678912', 'abcdefg']
+        expect = []
 
         # Act
-        actual = card_num_format(num_star)
+        actual = card_num_format(mock_num_star)
 
         # Assert
         self.assertEqual(actual, expect)

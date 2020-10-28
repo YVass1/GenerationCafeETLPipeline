@@ -6,12 +6,11 @@ class Test_card_number_format(unittest.TestCase):
     @patch("card_format.card_num_format")
     def test_last_four_digits_returned_from_card_number_format(self, mock_card_num_format):
         # Arrange
-        num_star = ['1234567891234567', '123456789123']
-        mock_card_num_format.return_value = [0]
+        mock_num_star = ['1234567891234567', '123456789123']
         expect = ['************4567', '********9123']
 
         # Act
-        actual = card_num_format(num_star)
+        actual = card_num_format(mock_num_star)
 
         # Assert
         self.assertEqual(actual, expect)
