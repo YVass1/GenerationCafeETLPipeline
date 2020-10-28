@@ -53,14 +53,6 @@ def transform(dict_):
 
 
 #EXTRACT
-def read_from_s3(bucket, key):
-    s3 = boto3.client('s3')
-    s3_object = s3.get_object(Bucket = bucket, Key = key)
-
-    data = s3_object['Body'].read().decode('utf-8')
-    return data
-
-
 def convert_data_to_lines(data):
     return_list = data.split("\n")
     return return_list
