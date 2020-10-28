@@ -4,7 +4,7 @@ from datetime import datetime
 import numpy as np
 from etl.load.mock_etl_handler_local import start as start
 
-#data = start()
+data = start()
 
 #CONSTANTS NEEDED
 sql_code_filepath = './etl/load/database_sql_code.txt'
@@ -36,16 +36,14 @@ def create_database_tables(filepath, database_name):
     finally:
         connection.close()
 
-
 sub_data =  [{"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": [None, "black"],
 "drink_price": [2.5, 1.75]}, {"drink_size": [None, "medium"], "drink_type": ["latte", "coffee"], "drink_flavour": ["peppermint", "black"],
 "drink_price": [10.5, 1.75]}]
 
-#data = {"datetime": ["2020-10-11 08:11:00", "2020-10-26 11:06:00"], "location": 
-["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"],
- "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CASH","CARD"],
-  "card_number" : [None,"************1111"]}
-
+# data = {"datetime": ["2020-10-11 08:11:00", "2020-10-26 11:06:00"], "location": 
+# ["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"],
+#  "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CASH","CARD"],
+#   "card_number" : [None,"************1111"]}
 
 def check_for_none_data(data):
     #if you see None in the dict replace it with null

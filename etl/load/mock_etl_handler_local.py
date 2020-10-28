@@ -20,7 +20,6 @@ def start():
 
     return transformed_dict
     
-
 def extract(rows):
 
     rows_without_quotes = []
