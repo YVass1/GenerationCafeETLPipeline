@@ -36,10 +36,9 @@ def create_database_tables(filepath, database_name):
 
 sub_data =  [{"drink_size": ["large", "medium"], "drink_type": ["tea", "coffee"], "drink_flavour": ["peppermint", "black"],
  "drink_price": [2.5, 1.75]}, {"drink_size": ["small", "medium"], "drink_type": ["latte", "coffee"], "drink_flavour": ["peppermint", "black"],
- "drink_price": [10.5, 1.75] }]
+ "drink_price": [10.5, 1.75]}]
 
-data = {"datetime": ["11/10/2020 08:11", "26/10/2020 11:06"], "location": ["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"], "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CARD","CARD"], "card_number" : ["************1234","************1111"]}
-
+data = {"datetime": ["2020-10-11 08:11:00", "2020-10-26 11:06:00"], "location": ["Aberdeen","Aberdeen"], "fname": ["John", "Maria"],"lname" : ["Doe", "Johnson"], "purchase" : sub_data, "total_price" : [4.25, 2.10],"payment_method" : ["CARD","CARD"], "card_number" : ["************1234","************1111"]}
 
 def reformatting_data_for_sql(data):
     #extracting data from dict format to format more suitable for MySQL statements
@@ -51,7 +50,7 @@ def reformatting_data_for_sql(data):
         unique_locations = list(set(locations))
 
         datetimes = data["datetime"]
-        datetime_objects = [datetime.strptime(dtime, '%d/%m/%M %H:%M') for dtime in datetimes]
+        datetime_objects = [datetime.strptime(dtime, '%Y-%m-%d %H:%M:%S') for dtime in datetimes]
         days = [dtime.strftime("%A") for dtime in datetime_objects]
         unique_days = list(set(days))
         months = [dtime.strftime("%B") for dtime in datetime_objects]
@@ -140,7 +139,7 @@ def insert_data_into_tables(data):
         
             full_datetime_info = list(zip(datetimes, day_ids, month_ids, year_ids))
 
-            sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE(%s, "%%d/%%m/%%Y %%H:%%i"), %s,%s,%s);"""
+            sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s);"""
             cursor.executemany(sql_command_insert_data_into_table, full_datetime_info)
 
             #Items table
@@ -171,8 +170,7 @@ def insert_data_into_tables(data):
                     Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                     AND Drink_size = %s""", drink_order)
                     item_ids.append(cursor.fetchone()[0])
-
-
+            
 
             #select time_ids
             #time_ids = []
