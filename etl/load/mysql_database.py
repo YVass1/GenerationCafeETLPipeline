@@ -51,7 +51,7 @@ def reformatting_data_for_sql(data):
         unique_locations = list(set(locations))
 
         datetimes = data["datetime"]
-        datetime_objects = [datetime.strptime(dtime, '%d/%m/%Y %H:%M') for dtime in datetimes]
+        datetime_objects = [datetime.strptime(dtime, '%d/%m/%M %H:%M') for dtime in datetimes]
         days = [dtime.strftime("%A") for dtime in datetime_objects]
         unique_days = list(set(days))
         months = [dtime.strftime("%B") for dtime in datetime_objects]
@@ -64,12 +64,15 @@ def reformatting_data_for_sql(data):
         card_numbers = data["card_number"]
         
         #purchases may still need restructuring
-        #all_purchases = [[("edinburgh", 2.00, "tea", "black", "medium"), ("edinburgh, 4.00, "coffee", "large")],[("aberdeen", 4.00, "coffee", "large")]]
 
         all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
         #print(f"\n {all_purchases} \n")
+        
         x = [tup for list_of_tup in all_purchases for tup in list_of_tup]
+        #print(f"{x} \n")
+
         unique_items = list(set(x))
+        #print(f"{unique_items} \n")
 
         return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, x
 
@@ -147,20 +150,38 @@ def insert_data_into_tables(data):
             
             #tier 3
             #Orders table
-     
-            print(x)
+
+            #select payment ids
+            payment_ids = []
+            for name in customer_names:
+                cursor.execute("""select p.Payment_id from Payments as p join Customers as c on c.Customer_id = p.Customer_id where c.forename = %s and c.surname = %s; """, name)
+                payment_ids.append(cursor.fetchone()[0])
+            #print(payment_ids)
+        
+            orders = list(zip(payment_ids, all_purchases))
 
             #select items ids 
             item_ids = []
-            for var in x:
-                cursor.execute("""SELECT i.Item_id FROM  
-                Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
-                AND Drink_size = %s""", var)
-                item_ids.append(cursor.fetchone()[0])
-            print(item_ids)
+            for order in orders:
+                print(order)
+                print(order[1])
+                for drink_order in order[1]:
+                    print(i)
+                    cursor.execute("""SELECT i.Item_id FROM  
+                    Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                    AND Drink_size = %s""", drink_order)
+                    item_ids.append(cursor.fetchone()[0])
 
-            #select payment ids 
+
+
             #select time_ids
+            #time_ids = []
+            #for time in z:
+            #    cursor.execute("""SELECT i.Item_id FROM  
+            #    Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+            #    AND Drink_size = %s""", time)
+            #   time_ids.append(cursor.fetchone()[0])
+            #print(time_ids)
 
 
             #order_info = [(`Item_id`,`Payment_id`,`Time_id`),(),(),()]
