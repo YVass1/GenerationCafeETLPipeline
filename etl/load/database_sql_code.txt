@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `Items`;
 CREATE TABLE `Items` (
 	`Item_id` INT NOT NULL AUTO_INCREMENT,
 	`Location_name` varchar(100),
-	`Price` varchar(10) NOT NULL,
+	`Price` FLOAT,
 	`Drink_type` varchar(100),
 	`Drink_flavour` varchar(100),
 	`Drink_size` varchar(100),
