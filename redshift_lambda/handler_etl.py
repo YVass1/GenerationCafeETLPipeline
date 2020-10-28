@@ -3,6 +3,7 @@ import sys
 import os
 import csv
 import boto3
+import logging
 
 #In the below code, "Order" refers to all info on one line (date, name, drinks purchased, total price etc).
 #Whereas "Purchases" refer to just the drink information on the line. "Purchases" are one of several items in each "Order".
@@ -14,6 +15,8 @@ def start(event, context):
 
     extracted_dict = extract()
     transformed_dict = transform(extracted_dict)
+
+    return transformed_dict
     
 
 def extract():
@@ -138,7 +141,7 @@ def debug_prints(dict_):
     print(dict_["payment_method"][:10])
 
     print("Card Numbers of first 10 orders:")
-    print(dict_["card_number"])
+    print(dict_["card_number"][:10])
 
     print("FIRST 10 PURCHASE INFOS")
     for purchase in dict_["purchase"][:10]:
@@ -177,7 +180,7 @@ def clean_customer_names(customer_names):
 
     for name in customer_names:
         stripped_name = name.strip()
-        index_of_first_space = stripped_name.find(" ")#
+        index_of_first_space = stripped_name.find(" ")
         #finding only first space in case surname contains spaces (eg. Van Halen)
 
         first_name = stripped_name[:index_of_first_space]
@@ -269,7 +272,7 @@ def transform_purchases(purchases):
         new_dict = {}
         
         stripped_purchase = purchase.strip()
-        drink_info_list = stripped_purchase.split(", ") #
+        drink_info_list = stripped_purchase.split(", ")
 
         split_info_list = make_drink_info_list(drink_info_list)
         split_info_list_with_nones = check_for_flavour(split_info_list) #this adds None to flavour value when no flavour is provided
