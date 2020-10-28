@@ -65,13 +65,12 @@ def reformatting_data_for_sql(data):
         #purchases may still need restructuring
 
         all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
-        #print(f"\n {all_purchases} \n")
+
         
         x = [tup for list_of_tup in all_purchases for tup in list_of_tup]
-        #print(f"{x} \n")
+
 
         unique_items = list(set(x))
-        #print(f"{unique_items} \n")
 
         return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, x
 
@@ -139,8 +138,9 @@ def insert_data_into_tables(data):
         
             full_datetime_info = list(zip(datetimes, day_ids, month_ids, year_ids))
 
+            unique_datetimes =  list(set(full_datetime_info))
             sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s);"""
-            cursor.executemany(sql_command_insert_data_into_table, full_datetime_info)
+            cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
 
             #Items table
 
@@ -150,41 +150,35 @@ def insert_data_into_tables(data):
             #tier 3
             #Orders table
 
-            #select payment ids
+
+            #select time_ids
+            time_ids = []
+            for time in datetimes:
+               cursor.execute("""SELECT t.Time_id From Time as t WHERE t.datetime = %s""", time)
+               time_ids.append(cursor.fetchone()[0])
+
+
             payment_ids = []
             for name in customer_names:
                 cursor.execute("""select p.Payment_id from Payments as p join Customers as c on c.Customer_id = p.Customer_id where c.forename = %s and c.surname = %s; """, name)
                 payment_ids.append(cursor.fetchone()[0])
-            #print(payment_ids)
-        
-            orders = list(zip(payment_ids, all_purchases))
+
+            orders = list(zip(payment_ids, all_purchases, time_ids))
+
 
             #select items ids 
             item_ids = []
+            orders_info = []
             for order in orders:
-                print(order)
-                print(order[1])
                 for drink_order in order[1]:
-                    print(i)
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                     AND Drink_size = %s""", drink_order)
-                    item_ids.append(cursor.fetchone()[0])
+                    orders_info.append((order[0],cursor.fetchone()[0], order[2]))
             
-
-            #select time_ids
-            #time_ids = []
-            #for time in z:
-            #    cursor.execute("""SELECT i.Item_id FROM  
-            #    Items as i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
-            #    AND Drink_size = %s""", time)
-            #   time_ids.append(cursor.fetchone()[0])
-            #print(time_ids)
-
-
-            #order_info = [(`Item_id`,`Payment_id`,`Time_id`),(),(),()]
-            #sql_command_insert_data_into_table = """INSERT INTO `Orders` (`Item_id`,`Payment_id`,`Time_id`) VALUES (%s, %s, %s) ;#"""
-            #cursor.executemany(sql_command_insert_data_into_table, orders_info)
+            
+            sql_command_insert_data_into_table = """INSERT INTO `Orders` (Payment_id, Item_id, Time_id)  VALUES (%s, %s, %s) ;"""           
+            cursor.executemany(sql_command_insert_data_into_table, orders_info)
 
 
     except Exception as e:
