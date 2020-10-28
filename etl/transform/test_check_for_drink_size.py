@@ -1,4 +1,6 @@
-# def check_for_drink_size(split_copy_list):
+# Second one
+
+# ef check_for_drink_size(split_copy_list):
 #     return_list = ['Large Flavoured latte', 'Gingerbread', '2.85']
 #     for split_info in split_copy_list:
 #         print(split_info)
