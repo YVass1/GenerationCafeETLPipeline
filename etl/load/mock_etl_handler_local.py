@@ -1,28 +1,34 @@
-import psycopg2
-import sys
-import os
 import csv
-import boto3
 
 #In the below code, "Order" refers to all info on one line (date, name, drinks purchased, total price etc).
 #Whereas "Purchases" refer to just the drink information on the line. "Purchases" are one of several items in each "Order".
 
-def start(event, context):
+def start():
     print("Team One Pipeline")
 
-    logging.getLogger().setLevel(0)
+    filepath = "aberdeen_11-10-2020_19-49-26.csv"
+    rows = []
+    
+    with open(filepath, 'r') as file_:
+        reader = csv.reader(file_)
+        
+        for line in reader:
+            rows.append(str(line))
 
-    extracted_dict = extract()
+    extracted_dict = extract(rows)
     transformed_dict = transform(extracted_dict)
+
+    return transformed_dict
     
 
-def extract():
-    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    FILE_NAME = "aberdeen_11-10-2020_19-49-26.csv"
-    
-    raw_data = read_from_s3(BUCKET_NAME, FILE_NAME) #TODO: will need updating to find file names from today
-    raw_lines = convert_data_to_lines(raw_data)
-    comma_separated_lines = split_lines(raw_lines)
+def extract(rows):
+
+    rows_without_quotes = []
+
+    for row in rows:
+        rows_without_quotes.replace("'", "")
+
+    comma_separated_lines = split_lines(rows_without_quotes)
     clean_split_orders = remove_whitespace_and_quotes(comma_separated_lines)
     combined_purchase_orders = combine_purchases(clean_split_orders)
     
