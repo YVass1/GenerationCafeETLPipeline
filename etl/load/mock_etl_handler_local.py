@@ -6,7 +6,7 @@ import csv
 def start():
     print("Team One Pipeline")
 
-    filepath = "aberdeen_11-10-2020_19-49-26.csv"
+    filepath = "./etl/load/aberdeen_11-10-2020_19-49-26.csv"
     rows = []
     
     with open(filepath, 'r') as file_:
@@ -26,7 +26,8 @@ def extract(rows):
     rows_without_quotes = []
 
     for row in rows:
-        rows_without_quotes.replace("'", "")
+        new_row = row.replace("'", "")
+        rows_without_quotes.append(new_row)
 
     comma_separated_lines = split_lines(rows_without_quotes)
     clean_split_orders = remove_whitespace_and_quotes(comma_separated_lines)
