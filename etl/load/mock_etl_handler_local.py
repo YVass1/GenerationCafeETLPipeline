@@ -22,11 +22,11 @@ def start():
     
 
 def extract(rows):
-
     rows_without_quotes = []
 
     for row in rows:
-        rows_without_quotes.replace("'", "")
+        new_row = row.replace("'", "").replace("[", "").replace("]", "")
+        rows_without_quotes.append(new_row)
 
     comma_separated_lines = split_lines(rows_without_quotes)
     clean_split_orders = remove_whitespace_and_quotes(comma_separated_lines)
@@ -144,7 +144,7 @@ def debug_prints(dict_):
     print(dict_["payment_method"][:10])
 
     print("Card Numbers of first 10 orders:")
-    print(dict_["card_number"])
+    print(dict_["card_number"][:10])
 
     print("FIRST 10 PURCHASE INFOS")
     for purchase in dict_["purchase"][:10]:
@@ -275,7 +275,7 @@ def transform_purchases(purchases):
         new_dict = {}
         
         stripped_purchase = purchase.strip()
-        drink_info_list = stripped_purchase.split(", ") #
+        drink_info_list = stripped_purchase.split(", ")
 
         split_info_list = make_drink_info_list(drink_info_list)
         split_info_list_with_nones = check_for_flavour(split_info_list) #this adds None to flavour value when no flavour is provided
@@ -315,3 +315,7 @@ def card_num_format(card_num_list):
             starred_numbers.append(None) #adds None as card number value if valid card number is not present
 
     return starred_numbers
+
+
+if __name__ == "__main__":
+    start()
