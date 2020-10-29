@@ -88,7 +88,9 @@ def redshift_connect():
             password=creds["DbPassword"],
             port=port,
             host=host)
+        print("conn generation success")
     except Exception as ERROR:
+        print("conn generation failure")
         print("Connection Issue: " + str(ERROR))
         sys.exit(1)
 
