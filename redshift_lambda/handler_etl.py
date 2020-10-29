@@ -4,6 +4,8 @@ import os
 import csv
 import boto3
 import logging
+import datetime
+from dotenv import load_dotenv
 
 #In the below code, "Order" refers to all info on one line (date, name, drinks purchased, total price etc).
 #Whereas "Purchases" refer to just the drink information on the line. "Purchases" are one of several items in each "Order".
@@ -11,19 +13,118 @@ import logging
 def start(event, context):
     print("Team One Pipeline")
 
+    load_dotenv()
     logging.getLogger().setLevel(0)
+    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
 
+    file_to_extract = get_key_to_extract(event, BUCKET_NAME)
+
+    if file_to_extract == None:
+        return None
+
+    extracted_dict = extract(BUCKET_NAME, file_to_extract)
+
+    conn = redshift_connect()
     extracted_dict = extract()
     transformed_dict = transform(extracted_dict)
 
     return transformed_dict
+
+
+def get_key_to_extract(event, bucket_name):
+    keys = get_all_bucket_keys(bucket_name)
+
+    if event["is_using_current_date"] == "True":
+        key_to_extract = get_todays_key(keys)
+    else:
+        key_to_extract = keys[0]
+        
+    return key_to_extract
+
+
+def get_todays_key(keys):
+    raw_date_today = str(datetime.date.today())
+    split_date_today = raw_date_today.split("-")
+    date_today_correct_order = split_date_today[2] + "-" + split_date_today[1] + "-" + split_date_today[0]
+    
+    return_key = None
+    
+    for key in keys:
+        key_date = key.split("_")[-2]
+        
+        if key_date == date_today_correct_order:
+            return_key = key
+            break
+    
+    return return_key
+
+  
+def redshift_connect():
+    host = os.getenv("DB_HOST")
+    port = int(os.getenv("DB_PORT"))
+    user = os.getenv("DB_USER")
+    passwd = os.getenv("DB_PASS")
+    db = os.getenv("DB_NAME")
+    cluster = os.getenv("DB_CLUSTER")
+
+    try:
+        client = boto3.client('redshift')
+        creds = client.get_cluster_credentials(# Lambda needs these permissions as well DataAPI permissions
+            DbUser=user,
+            DbName=db,
+            ClusterIdentifier=cluster,
+            DurationSeconds=3600) # Length of time access is granted
+    except Exception as ERROR:
+        print("Credentials Issue: " + str(ERROR))
+        sys.exit(1)
+
+    print('got credentials')
+
+    try:
+        conn = psycopg2.connect(
+            dbname=db,
+            user=creds["DbUser"],
+            password=creds["DbPassword"],
+            port=port,
+            host=host)
+    except Exception as ERROR:
+        print("Connection Issue: " + str(ERROR))
+        sys.exit(1)
+
+    print('connected')
+    
+    ### This is what Stuart had in the handler.py from the start.
+    # try:
+    #     cursor = conn.cursor()
+    #     cursor.execute("create table test_table (id int)")
+    #     cursor.close()
+    #     conn.commit()
+    #     conn.close()
+
+    # except Exception as ERROR:
+    #     print("Execution Issue: " + str(ERROR))
+    #     sys.exit(1)
+
+    print('executed statement')
+
+    return conn
     
 
-def extract():
-    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    FILE_NAME = "aberdeen_11-10-2020_19-49-26.csv"
+def get_all_bucket_keys(bucket_name):
+    s3 = boto3.client('s3')
+    object_list = s3.list_objects_v2(Bucket = bucket_name)
+    contents = object_list["Contents"]
     
-    raw_data = read_from_s3(BUCKET_NAME, FILE_NAME) #TODO: will need updating to find file names from today
+    key_names = []
+    
+    for key in contents:
+        key_names.append(key["Key"])
+        
+    return key_names
+
+
+def extract(bucket_name, key_name):
+    raw_data = read_from_s3(bucket_name, key_name)
     raw_lines = convert_data_to_lines(raw_data)
     comma_separated_lines = split_lines(raw_lines)
     clean_split_orders = remove_whitespace_and_quotes(comma_separated_lines)
@@ -136,6 +237,9 @@ def debug_prints(dict_):
 
     print("Last Names of first 10 orders:")
     print(dict_["lname"][:10])
+
+    print("Total Prices of first 10 orders:")
+    print(dict_["total_price"][:10])
 
     print("Payment Methods of first 10 orders:")
     print(dict_["payment_method"][:10])
@@ -265,6 +369,16 @@ def remove_flavoured_words(drink_types):
     return return_drink_types
 
 
+def convert_string_list_to_int(string_list):
+    return_list = []
+    
+    for string in string_list:
+        new_string = string.replace(".", "")
+        return_list.append(int(new_string))
+
+    return return_list
+
+
 def transform_purchases(purchases):
     list_of_dicts = []
     
@@ -285,11 +399,12 @@ def transform_purchases(purchases):
         drink_price_list = drink_info_lists[3]
 
         drink_type_without_flavoured_words_list = remove_flavoured_words(drink_type_list)
+        drink_price_as_float_list = convert_string_list_to_int(drink_price_list)
 
         new_dict["drink_size"] = drink_size_list
         new_dict["drink_type"] = drink_type_without_flavoured_words_list
         new_dict["drink_flavour"] = drink_flavour_list
-        new_dict["drink_price"] = drink_price_list
+        new_dict["drink_price"] = drink_price_as_float_list
 
         list_of_dicts.append(new_dict)
  
@@ -297,7 +412,7 @@ def transform_purchases(purchases):
 
 
 def clean_total_prices(raw_list):
-    cleaned_total_prices = [float(price) for price in raw_list]
+    cleaned_total_prices = [(price*100) for price in raw_list]
     return cleaned_total_prices
 
 

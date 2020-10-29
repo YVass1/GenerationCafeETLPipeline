@@ -132,6 +132,9 @@ def debug_prints(dict_):
     print("Last Names of first 10 orders:")
     print(dict_["lname"][:10])
 
+    print("Total Prices of first 10 orders:")
+    print(dict_["total_price"][:10])
+
     print("Payment Methods of first 10 orders:")
     print(dict_["payment_method"][:10])
 
@@ -260,6 +263,16 @@ def remove_flavoured_words(drink_types):
     return return_drink_types
 
 
+def convert_string_list_to_int(string_list):
+    return_list = []
+    
+    for string in string_list:
+        new_string = string.replace(".", "")
+        return_list.append(int(new_string))
+
+    return return_list
+
+
 def transform_purchases(purchases):
     list_of_dicts = []
     
@@ -280,11 +293,12 @@ def transform_purchases(purchases):
         drink_price_list = drink_info_lists[3]
 
         drink_type_without_flavoured_words_list = remove_flavoured_words(drink_type_list)
+        drink_price_as_float_list = convert_string_list_to_int(drink_price_list)
 
         new_dict["drink_size"] = drink_size_list
         new_dict["drink_type"] = drink_type_without_flavoured_words_list
         new_dict["drink_flavour"] = drink_flavour_list
-        new_dict["drink_price"] = drink_price_list
+        new_dict["drink_price"] = drink_price_as_float_list
 
         list_of_dicts.append(new_dict)
  
@@ -292,7 +306,7 @@ def transform_purchases(purchases):
 
 
 def clean_total_prices(raw_list):
-    cleaned_total_prices = [float(price) for price in raw_list]
+    cleaned_total_prices = [int(price.replace(".","")) for price in raw_list]
     return cleaned_total_prices
 
 
