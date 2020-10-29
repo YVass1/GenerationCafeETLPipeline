@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `Items`;
 CREATE TABLE `Items` (
 	`Item_id` INT NOT NULL AUTO_INCREMENT,
 	`Location_name` varchar(100),
-	`Price` FLOAT,
+	`Price` DECIMAL(8,2),
 	`Drink_type` varchar(100),
 	`Drink_flavour` varchar(100),
 	`Drink_size` varchar(100),
@@ -43,7 +43,7 @@ DROP TABLE IF EXISTS `Payments`;
 CREATE TABLE `Payments` (
 	`Payment_id` INT NOT NULL AUTO_INCREMENT,
 	`Customer_id` INT,
-	`Total_amount` FLOAT(7),
+	`Total_amount` DECIMAL(10,2),
 	`Payment_type` varchar(100),
 	`Card_number` VARCHAR(255),
 	PRIMARY KEY (`Payment_id`)
