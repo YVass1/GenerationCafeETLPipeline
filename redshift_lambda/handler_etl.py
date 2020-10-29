@@ -447,16 +447,18 @@ def create_database_tables(sql_code_string, connection):
      with tables using file containing SQL commands."""
 
     try:
-            commands_string = re.sub(r"[\n\t]*", "", sql_code_string)
-            
-            #potential code for psygcopg2 if pymysql CLIENT.flag or equivalent not there and so
-            #psygcopg2 can not execute single string full of different queries
-            #separated_strings = commands_string.split(";")
-            #for string in separated_strings:
-            #    print(string)
-
+        #Reformatting string to remove line breaks and tabs
+        #re is an imported module for formatting
+        reformatted_sql_string = re.sub(r"[\n\t]*", "", sql_code_string)
+        
+        #creating list of strings each contaning SQL statement
+        sql_string_list = reformatted_sql_string.split(";")
+        
+        #Executing each SQL statement 
         with connection.cursor() as cursor:
-            cursor.execute(commands_string)
+            for sql_command in sql_string_list:
+                cursor.execute(sql_command)
+
     except Exception as e:
         print(f"Exception Error: {e}")
     finally:
