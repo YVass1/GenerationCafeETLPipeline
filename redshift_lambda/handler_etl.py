@@ -443,9 +443,11 @@ def create_database_tables(sql_code_string, connection):
             for sql_command in sql_string_list:
                 if type(sql_command) == str:
                     if sql_command.isspace() == False:
+                        print(sql_command)
                         cursor.execute(sql_command)
 
     except Exception as e:
+        print("Executing empty string")
         print(f"Exception Error: {e}")
     finally:
         connection.close()
