@@ -433,7 +433,7 @@ def create_database_tables(sql_code_string, connection):
     try:
         #Reformatting string to remove line breaks and tabs
         #re is an imported module for formatting
-        reformatted_sql_string = re.sub(r"[\n\t]*", "", sql_code_string)
+        reformatted_sql_string = re.sub(r"[\n\t]*", "", sql_code_string).strip()
         
         #creating list of strings each contaning SQL statement
         sql_string_list = reformatted_sql_string.split(";")
