@@ -466,21 +466,23 @@ def create_database_tables(sql_code_string, connection):
 
 #Function to convert any Python None values in the data to NULL (SQL only recognises NULL)
 def convert_none_data_to_null(data):
-    """Checks if any value in data structure has None value, if so converts to 'NULL'.
-    NOTE: Function can only check these data structure types: [[(),()],[(),()]] or [(),()]. """
-    if isinstance(data,list):
-        for structure in data:
-            if isinstance(structure, tuple):
-                for element in structure:
-                    if element is None:
-                        element = "NULL"      
-            elif isinstance(structure, list):
-                for inner_list in structure:
-                    for element in inner_list:
-                        if element is None:
-                            element = "NULL"
-    return data
+    return list(convert_iterable_to_list_with_nones(data))
 
+
+def convert_iterable_to_list_with_nones(iterable):
+    iterable_type = type(iterable)
+    list_with_nulls = []
+    
+    for item in iterable:
+        if type(item) == tuple or type(item) == list:
+            list_with_nulls.append(convert_iterable_to_list_with_nones(item))
+        elif item == None:
+            list_with_nulls.append("NULL")
+        else:
+            list_with_nulls.append(item)
+
+    return iterable_type(list_with_nulls)
+    
 #Function checks if the tuple's chosen index has a None value in there or not    
 def is_value_none(index, tuple_data):
     """Checks if in data (tuple) the specified index has a None value.
