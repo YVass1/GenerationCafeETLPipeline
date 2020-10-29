@@ -410,7 +410,7 @@ def transform_purchases(purchases):
 
 
 def clean_total_prices(raw_list):
-    cleaned_total_prices = [(price*100) for price in raw_list]
+    cleaned_total_prices = [int(price.replace(".","")) for price in raw_list]
     return cleaned_total_prices
 
 
