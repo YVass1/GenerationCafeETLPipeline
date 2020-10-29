@@ -406,11 +406,9 @@ def transform_purchases(purchases):
  
     return list_of_dicts
 
-
 def clean_total_prices(raw_list):
-    cleaned_total_prices = [(price*100) for price in raw_list]
+    cleaned_total_prices = [int(price.replace(".","")) for price in raw_list]
     return cleaned_total_prices
-
 
 def card_num_format(card_num_list):
     starred_numbers = []
@@ -657,7 +655,7 @@ def insert_data_into_tables(data, connection):
                         del drink_order_list[3:]
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
                         AND Drink_size IS NULL """, drink_order_list)
                         
                         item_id = cursor.fetchone()[0]
@@ -671,7 +669,7 @@ def insert_data_into_tables(data, connection):
                         drink_order_list.remove(drink_order_list[drink_flavour_index])
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
                         AND Drink_size = %s """, drink_order_list)
                         
                         item_id = cursor.fetchone()[0]
@@ -686,7 +684,7 @@ def insert_data_into_tables(data, connection):
                         drink_order_list.remove(drink_order_list[drink_size_index])
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size IS NULL """, drink_order_list)
                         
                         time_id = cursor.fetchone()[0]
@@ -697,7 +695,7 @@ def insert_data_into_tables(data, connection):
                     
                     else:
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size= %s """, drink_order)
                         
                         item_id = cursor.fetchone()[0]
