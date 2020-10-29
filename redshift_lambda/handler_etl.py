@@ -442,7 +442,7 @@ def create_database_tables(sql_code_string, connection):
         with connection.cursor() as cursor:
             for sql_command in sql_string_list:
                 if type(sql_command) == str:
-                    if sql_command.isspace() == False:
+                    if sql_command.isspace() == False and len(sql_command) > 0:
                         print(sql_command)
                         cursor.execute(sql_command)
 
