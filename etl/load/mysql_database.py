@@ -1,26 +1,12 @@
-import etl.load.mysql_database_connection as db_connect
 import re
 import datetime
-import numpy as np
-from etl.load.mock_etl_handler_local import start as start
 
-#extracting data dictionary
-data = start()
-
-#CONSTANTS NEEDED
-sql_code_filepath = './etl/load/database_sql_code.txt'
-
-def create_database_tables(filepath, connection):
+def create_database_tables(sql_code_string, connection):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
 
     try:
-        #opening textfile containing SQL code
-        with open(filepath, "r") as file_data:
-            #read file and joining every line to create single string containing all SQL statements
-            sql_code = "".join(file_data.readlines())
-            #Reformatting string so can be read and executed by SQL
-            commands_string = re.sub(r"[\n\t]*", "", sql_code)
+            commands_string = re.sub(r"[\n\t]*", "", sql_code_string)
             
             #potential code for psygcopg2 if pymysql CLIENT.flag or equivalent not there and so
             #psygcopg2 can not execute single string full of different queries
