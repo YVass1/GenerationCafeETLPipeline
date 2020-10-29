@@ -17,7 +17,6 @@ def start(event, context):
     dict_ = generate_dictionary(combined_purchase_orders)
     debug_prints(dict_)
 
-
 #EXTRACT
 def read_from_s3(bucket, key):
     s3 = boto3.client('s3')
