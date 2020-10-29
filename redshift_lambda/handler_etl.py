@@ -4,8 +4,10 @@ import os
 import csv
 import boto3
 import logging
-import datetime
+import datetime 
 from dotenv import load_dotenv
+import re
+import numpy as np
 
 #In the below code, "Order" refers to all info on one line (date, name, drinks purchased, total price etc).
 #Whereas "Purchases" refer to just the drink information on the line. "Purchases" are one of several items in each "Order".
@@ -13,18 +15,22 @@ from dotenv import load_dotenv
 def start(event, context):
     print("Team One Pipeline")
 
+    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
+    SQL_TEXTFILE_KEY_NAME = "database_sql_code.txt"
+
     load_dotenv()
     logging.getLogger().setLevel(0)
-    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-
+    
     file_to_extract = get_key_to_extract(event, BUCKET_NAME)
 
     if file_to_extract == None:
         return None
 
     conn = redshift_connect()
-    extracted_dict = extract(BUCKET_NAME, file_to_extract)
+    extracted_dict, sql_code = extract(BUCKET_NAME, file_to_extract, SQL_TEXTFILE_KEY_NAME)
     transformed_dict = transform(extracted_dict)
+    load( transformed_dict, conn, sql_code)
+
 
     return transformed_dict
 
@@ -121,15 +127,15 @@ def get_all_bucket_keys(bucket_name):
     return key_names
 
 
-def extract(bucket_name, key_name):
-    raw_data = read_from_s3(bucket_name, key_name)
+def extract(bucket_name, key_name, sql_textfile_name):
+    raw_data, sql_code = read_from_s3(bucket_name, cafe_csv_key_name, sql_textfile_name)
     raw_lines = convert_data_to_lines(raw_data)
     comma_separated_lines = split_lines(raw_lines)
     clean_split_orders = remove_whitespace_and_quotes(comma_separated_lines)
     combined_purchase_orders = combine_purchases(clean_split_orders)
     
     dict_ = generate_dictionary(combined_purchase_orders)
-    return dict_
+    return (dict_, sql_code)
 
 
 def transform(dict_):
@@ -147,14 +153,26 @@ def transform(dict_):
 
     return transformed_dict
 
+def load(cleaned_data, connection, sql_code_txtfile):
+    
+    
+    create_database_tables(sql_code_txtfile, connection)
 
-#EXTRACT
-def read_from_s3(bucket, key):
+    insert_data_into_tables(data, connection)
+
+    return
+
+###################### EXTRACT SECTION ##################
+def read_from_s3(bucket, cafe_csv_key, sql_txtfile_key):
     s3 = boto3.client('s3')
-    s3_object = s3.get_object(Bucket = bucket, Key = key)
 
-    data = s3_object['Body'].read().decode('utf-8')
-    return data
+    s3_raw_cafe_data = s3.get_object(Bucket = bucket, Key = cafe_csv_key)
+    s3_sql_code = s3.get_object(Bucket = bucket, Key = sql_txtfile_key)
+
+    data = s3_raw_cafe_data['Body'].read().decode('utf-8')
+    sql_code = s3_sql_code['Body'].read().decode('utf-8')
+
+    return (data, sql_code)
 
 
 def convert_data_to_lines(data):
@@ -266,7 +284,7 @@ def debug_prints(dict_):
     print("total locations: " + str(len(dict_["location"])))
     print("total card nunmbers: " + str(len(dict_["card_number"])))
 
-#TRANSFORM
+################## TRANSFORM SECTION ###################
 def clean_datetimes(raw_list):
     cleaned_datetimes = []
 
@@ -425,3 +443,7 @@ def card_num_format(card_num_list):
             starred_numbers.append(None) #adds None as card number value if valid card number is not present
 
     return starred_numbers
+
+################## LOAD SECTION ################
+
+data = start()
