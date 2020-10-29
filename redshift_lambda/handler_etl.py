@@ -15,7 +15,7 @@ def start(event, context):
     print("Team One Pipeline")
 
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "database_postgresql_code.txt"
+    SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
 
     load_dotenv()
     logging.getLogger().setLevel(0)
@@ -93,23 +93,7 @@ def redshift_connect():
         sys.exit(1)
 
     print('connected')
-    
-    ### This is what Stuart had in the handler.py from the start.
-    # try:
-    #     cursor = conn.cursor()
-    #     cursor.execute("create table test_table (id int)")
-    #     cursor.close()
-    #     conn.commit()
-    #     conn.close()
-
-    # except Exception as ERROR:
-    #     print("Execution Issue: " + str(ERROR))
-    #     sys.exit(1)
-
-    print('executed statement')
-
     return conn
-    
 
 def get_all_bucket_keys(bucket_name):
     s3 = boto3.client('s3')
@@ -666,11 +650,14 @@ def insert_data_into_tables(data, connection):
                     drink_size_index = 4
                     
                     if is_value_none(drink_flavour_index,drink_order) and is_value_none(drink_size_index, drink_order):
+                        
                         drink_order_list = list(drink_order)
+
+                        #removing index 3 and everything afterwards
                         del drink_order_list[3:]
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
+                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
                         AND Drink_size IS NULL """, drink_order_list)
                         
                         item_id = cursor.fetchone()[0]
@@ -681,10 +668,10 @@ def insert_data_into_tables(data, connection):
 
                     elif is_value_none( drink_flavour_index, drink_order):
                         drink_order_list = list(drink_order)
-                        drink_order_list.remove(drink_order_list[3])
+                        drink_order_list.remove(drink_order_list[drink_flavour_index])
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
+                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
                         AND Drink_size = %s """, drink_order_list)
                         
                         item_id = cursor.fetchone()[0]
@@ -696,10 +683,10 @@ def insert_data_into_tables(data, connection):
                     elif is_value_none(drink_size_index ,drink_order):
                         
                         drink_order_list = list(drink_order)
-                        drink_order_list.remove(drink_order_list[4])
+                        drink_order_list.remove(drink_order_list[drink_size_index])
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size IS NULL """, drink_order_list)
                         
                         time_id = cursor.fetchone()[0]
@@ -710,7 +697,7 @@ def insert_data_into_tables(data, connection):
                     
                     else:
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items AS i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size= %s """, drink_order)
                         
                         item_id = cursor.fetchone()[0]
@@ -719,13 +706,12 @@ def insert_data_into_tables(data, connection):
                         
                         orders_info.append((payment_id,item_id,time_id))
             
-            sql_command_insert_data_into_table = """INSERT INTO `Orders` (Payment_id, Item_id, Time_id)  VALUES (%s, %s, %s) ;"""           
+            sql_command_insert_data_into_table = """INSERT INTO Orders (Payment_id, Item_id, Time_id) VALUES (%s, %s, %s)"""           
             cursor.executemany(sql_command_insert_data_into_table, orders_info)
-
-    except Exception as e:
-        #Rolls back any sql statements committed when error occurs partway to perserve data integrity
-        connection.rollback()
-        print(f"Exception Error: {e}")
+    # except Exception as e:
+    #     #Rolls back any sql statements committed when error occurs partway to perserve data integrity
+    #     connection.ROLLBACK()
+    #     print(f"Exception Error: {e}")
     finally:
         connection.close()
 
