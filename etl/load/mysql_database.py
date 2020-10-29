@@ -1,6 +1,6 @@
 import etl.load.mysql_database_connection as db_connect
 import re
-from datetime import datetime
+import datetime
 import numpy as np
 from etl.load.mock_etl_handler_local import start as start
 
@@ -28,14 +28,9 @@ def create_database(database_name):
         #closing connection
         connection.close()
 
-def create_database_tables(filepath, database_name):
+def create_database_tables(filepath):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
-    
-    #making connection to desired database
-    global mysql_db
-    mysql_db = db_connect.MYSQL_database(database_name)
-    connection = mysql_db.make_connection()
 
     try:
         #opening textfile containing SQL code
@@ -88,7 +83,7 @@ def is_value_none(index, tuple_data):
 #Returns out only all the unique days, months and years found from datetimes passed in
 def corresponding_unique_days_months_years(datetimes):
     """Returns lists of unique days, months and years found from datetimes passed in"""
-    datetime_objects = [datetime.strptime(dtime, '%Y-%m-%d %H:%M:%S') for dtime in datetimes]
+    datetime_objects = [datetime.datetime.strptime(dtime, '%Y-%m-%d %H:%M:%S') for dtime in datetimes]
     
     days = [dtime.strftime("%A") for dtime in datetime_objects]
     unique_days = list(set(days))
@@ -324,6 +319,6 @@ def insert_data_into_tables(data):
         connection.close()
 
 if __name__ == "__main__":
-    create_database("final_project_team1")
-    create_database_tables(sql_code_filepath, "final_project_team1")
+    #create_database("final_project_team1")
+    create_database_tables(sql_code_filepath)
     insert_data_into_tables(data)
