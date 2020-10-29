@@ -316,10 +316,10 @@ def insert_data_into_tables(data):
             sql_command_insert_data_into_table = """INSERT INTO `Orders` (Payment_id, Item_id, Time_id)  VALUES (%s, %s, %s) ;"""           
             cursor.executemany(sql_command_insert_data_into_table, orders_info)
 
-    # except Exception as e:
-    #     #Rolls back any sql statements committed when error occurs partway to perserve data integrity
-    #     connection.rollback()
-    #     print(f"Exception Error: {e}")
+    except Exception as e:
+        #Rolls back any sql statements committed when error occurs partway to perserve data integrity
+        connection.rollback()
+        print(f"Exception Error: {e}")
     finally:
         connection.close()
 
