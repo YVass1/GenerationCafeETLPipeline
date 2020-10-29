@@ -308,8 +308,8 @@ def insert_data_into_tables(data):
                         AND Drink_size= %s """, drink_order)
                         
                         item_id = cursor.fetchone()[0]
-                        payment_id = [0]
-                        time_id = [2]
+                        payment_id = purchase[0]
+                        time_id = purchase[2]
                         
                         orders_info.append((payment_id,item_id,time_id))
             
