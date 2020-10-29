@@ -22,10 +22,8 @@ def start(event, context):
     if file_to_extract == None:
         return None
 
-    extracted_dict = extract(BUCKET_NAME, file_to_extract)
-
     conn = redshift_connect()
-    extracted_dict = extract()
+    extracted_dict = extract(BUCKET_NAME, file_to_extract)
     transformed_dict = transform(extracted_dict)
 
     return transformed_dict
