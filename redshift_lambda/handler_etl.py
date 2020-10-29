@@ -15,7 +15,7 @@ def start(event, context):
     print("Team One Pipeline")
 
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "database_sql_code.txt"
+    SQL_TEXTFILE_KEY_NAME = "database_postgresql_code.txt"
 
     load_dotenv()
     logging.getLogger().setLevel(0)
@@ -154,7 +154,7 @@ def load(cleaned_data, connection, sql_code_txtfile):
     
     create_database_tables(sql_code_txtfile, connection)
 
-    insert_data_into_tables(data, connection)
+    insert_data_into_tables(cleaned_data, connection)
 
     return
 
@@ -568,10 +568,10 @@ def insert_data_into_tables(data, connection):
 
             #inserting data into payments table
             #selecting corresponding customer ids
-            cursor.execute('SELECT c.Customer_id FROM Customers as c')
+            cursor.execute('SELECT c.Customer_id FROM Customers AS c')
 
             #Extracts each row's customer_id but in tuple form: (customer_id, ) 
-            rows_of_customer_ids_tuples = cursor.fetchall()
+            rows_of_customer_ids_tuples = cursor.FETCHALL()
 
             #Extracting customer_id out of tuple for each row and appending to customer_ids
             customer_ids = [row[0] for row in rows_of_customer_ids_tuples]
@@ -580,7 +580,7 @@ def insert_data_into_tables(data, connection):
             payments_info = list(zip(customer_ids, total_prices, payment_methods, card_numbers))
             
             #inserting payment info data into payments table
-            sql_command_insert_data_into_table = """INSERT INTO `Payments` (`Customer_id`,`Total_amount`,`Payment_type`,`Card_number`) VALUES (%s, %s, %s,%s) ;"""
+            sql_command_insert_data_into_table = """INSERT INTO Payments (Customer_id, Total_amount, Payment_type, Card_number) VALUES (%s, %s, %s,%s);"""
             cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
 
             #Inserting data into table Time
@@ -592,7 +592,7 @@ def insert_data_into_tables(data, connection):
             #append to day_ids list
             day_ids = []
             for day in days:
-                cursor.execute(f'SELECT d.Day_id FROM Day as d WHERE d.Day = %s', day )
+                cursor.execute(f'SELECT d.Day_id FROM Day AS d WHERE d.Day = %s', day )
                 day_id = cursor.fetchone()[0]
                 day_ids.append(day_id)
 
@@ -601,7 +601,7 @@ def insert_data_into_tables(data, connection):
             #append to month_ids list
             month_ids = []
             for month in months:
-                cursor.execute(f'SELECT d.Month_id FROM Month as d WHERE d.Month = %s', month )
+                cursor.execute(f'SELECT d.Month_id FROM Month AS d WHERE d.Month = %s', month )
                 month_id = cursor.fetchone()[0]
                 month_ids.append(month_id)
             
@@ -610,7 +610,7 @@ def insert_data_into_tables(data, connection):
             #append to years_ids list
             year_ids = []
             for year in years:
-                cursor.execute(f'SELECT d.Year_id FROM Year as d WHERE d.Year = %s', year )
+                cursor.execute(f'SELECT d.Year_id FROM Year AS d WHERE d.Year = %s', year )
                 year_id = cursor.fetchone()[0]
                 year_ids.append(year_id)
         
@@ -624,13 +624,13 @@ def insert_data_into_tables(data, connection):
             unique_datetimes =  list(set(full_datetimes_info))
 
             #inserting unique datetimes_info into table Time
-            sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s);"""
+            sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s)"""
             cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
 
             #Items table
 
             #Inserting data into Items table
-            sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, `Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
+            sql_command_insert_data_into_table = """INSERT INTO Items (Location_name, Price , Drink_type , Drink_flavour, Drink_size) VALUES (%s, %s, %s,%s,%s)"""
             cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
             
             #tier 3
@@ -641,7 +641,7 @@ def insert_data_into_tables(data, connection):
             #Selecting Time_id and appending to time_ids list
             time_ids = []
             for time in datetimes:
-               cursor.execute("""SELECT t.Time_id From Time as t WHERE t.datetime = %s""", time)
+               cursor.execute("""SELECT t.Time_id From Time AS t WHERE t.datetime = %s""", time)
                time_id = cursor.fetchone()[0]
                time_ids.append(time_id)
 
@@ -649,7 +649,7 @@ def insert_data_into_tables(data, connection):
             #Selecting payment_id connected to a customer_id which is connected to customer name
             payment_ids = []
             for name in customer_names:
-                cursor.execute("""select p.Payment_id from Payments as p join Customers as c on c.Customer_id = p.Customer_id where c.forename = %s and c.surname = %s; """, name)
+                cursor.execute("""select p.Payment_id from Payments AS p join Customers AS c on c.Customer_id = p.Customer_id where c.forename = %s and c.surname = %s; """, name)
                 payment_id = cursor.fetchone()[0]
                 payment_ids.append(payment_id)
 
