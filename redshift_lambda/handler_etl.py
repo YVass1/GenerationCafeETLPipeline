@@ -13,11 +13,64 @@ def start(event, context):
     print("Team One Pipeline")
 
     logging.getLogger().setLevel(0)
+    load_dotenv()
 
+    conn = redshift_connect()
     extracted_dict = extract()
     transformed_dict = transform(extracted_dict)
 
     return transformed_dict
+
+
+def redshift_connect():
+    host = os.getenv("DB_HOST")
+    port = int(os.getenv("DB_PORT"))
+    user = os.getenv("DB_USER")
+    passwd = os.getenv("DB_PASS")
+    db = os.getenv("DB_NAME")
+    cluster = os.getenv("DB_CLUSTER")
+
+    try:
+        client = boto3.client('redshift')
+        creds = client.get_cluster_credentials(# Lambda needs these permissions as well DataAPI permissions
+            DbUser=user,
+            DbName=db,
+            ClusterIdentifier=cluster,
+            DurationSeconds=3600) # Length of time access is granted
+    except Exception as ERROR:
+        print("Credentials Issue: " + str(ERROR))
+        sys.exit(1)
+
+    print('got credentials')
+
+    try:
+        conn = psycopg2.connect(
+            dbname=db,
+            user=creds["DbUser"],
+            password=creds["DbPassword"],
+            port=port,
+            host=host)
+    except Exception as ERROR:
+        print("Connection Issue: " + str(ERROR))
+        sys.exit(1)
+
+    print('connected')
+    
+    ### This is what Stuart had in the handler.py from the start.
+    # try:
+    #     cursor = conn.cursor()
+    #     cursor.execute("create table test_table (id int)")
+    #     cursor.close()
+    #     conn.commit()
+    #     conn.close()
+
+    # except Exception as ERROR:
+    #     print("Execution Issue: " + str(ERROR))
+    #     sys.exit(1)
+
+    print('executed statement')
+
+    return conn
     
 
 def extract():
