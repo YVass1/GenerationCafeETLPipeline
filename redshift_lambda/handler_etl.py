@@ -124,7 +124,7 @@ def get_all_bucket_keys(bucket_name):
     return key_names
 
 
-def extract(bucket_name, key_name, sql_textfile_name):
+def extract(bucket_name, cafe_csv_key_name, sql_textfile_name):
     raw_data, sql_code = read_from_s3(bucket_name, cafe_csv_key_name, sql_textfile_name)
     raw_lines = convert_data_to_lines(raw_data)
     comma_separated_lines = split_lines(raw_lines)
@@ -538,9 +538,7 @@ def reformatting_data_for_sql(data):
 
 def insert_data_into_tables(data, connection):
     """Inserts data into various database tables"""
-    connection = mysql_db.make_connection()
     try:
-        #making connection to database
         with connection.cursor() as cursor:
 
             #reformatted data suitable for MySQL statements
@@ -551,26 +549,26 @@ def insert_data_into_tables(data, connection):
             #tier 1
 
             #inserting data into customer table
-            sql_command_insert_data_into_table = 'INSERT INTO `Customers` (`Forename`, `Surname`) VALUES (%s, %s)'
+            sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
             cursor.executemany(sql_command_insert_data_into_table, customer_names)
             
             #inserting data into cafes locations table
-            sql_command_insert_data_into_table = 'INSERT INTO `Cafe_locations` (`Location_name`) VALUES (%s)'
+            sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
             cursor.executemany(sql_command_insert_data_into_table, unique_locations)
 
             #inserting data into day, month, year tables
-            sql_command_insert_data_into_table = "INSERT INTO `Day` (`Day`) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s);"
             cursor.executemany( sql_command_insert_data_into_table, unique_days)
-            sql_command_insert_data_into_table = "INSERT INTO `Month` (`Month`) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Month (Month) VALUES (%s);"
             cursor.executemany( sql_command_insert_data_into_table, unique_months)
-            sql_command_insert_data_into_table = "INSERT INTO `Year` (`Year`) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Year (Year) VALUES (%s);"
             cursor.executemany( sql_command_insert_data_into_table, unique_years)
 
             #tier 2
 
             #inserting data into payments table
             #selecting corresponding customer ids
-            cursor.execute('SELECT c.Customer_id FROM Customers as c;')
+            cursor.execute('SELECT c.Customer_id FROM Customers as c')
 
             #Extracts each row's customer_id but in tuple form: (customer_id, ) 
             rows_of_customer_ids_tuples = cursor.fetchall()
