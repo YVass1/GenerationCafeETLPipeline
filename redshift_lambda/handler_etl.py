@@ -441,7 +441,9 @@ def create_database_tables(sql_code_string, connection):
         #Executing each SQL statement 
         with connection.cursor() as cursor:
             for sql_command in sql_string_list:
-                cursor.execute(sql_command)
+                if type(sql_command) == str:
+                    if sql_command.isspace() == False:
+                        cursor.execute(sql_command)
 
     except Exception as e:
         print(f"Exception Error: {e}")
