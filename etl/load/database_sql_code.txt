@@ -2,31 +2,29 @@ DROP TABLE IF EXISTS `Orders`;
 
 CREATE TABLE `Orders` (
 	`Order_id` INT NOT NULL AUTO_INCREMENT,
-	`Item_id` INT NOT NULL,
-	`Payment_id` INT NOT NULL,
-	`Time_id` INT NOT NULL,
-	`Drink_size` varchar(35),
-	PRIMARY KEY (`Order_id`,`Payment_id`)
+	`Item_id` INT,
+	`Payment_id` INT,
+	`Time_id` INT,
+	PRIMARY KEY (`Order_id`)
 );
 
 DROP TABLE IF EXISTS `Items`;
 
 CREATE TABLE `Items` (
 	`Item_id` INT NOT NULL AUTO_INCREMENT,
-	`Cafe_id` INT NOT NULL,
-	`Price` FLOAT(7),
-	`Drink_type` varchar(50),
-	`Flavour` varchar(50),
+	`Location_name` varchar(100),
+	`Price` DECIMAL(8,2),
+	`Drink_type` varchar(100),
+	`Drink_flavour` varchar(100),
+	`Drink_size` varchar(100),
 	PRIMARY KEY (`Item_id`)
 );
 
-DROP TABLE IF EXISTS `Cafes`;
+DROP TABLE IF EXISTS `Cafe_locations`;
 
-CREATE TABLE `Cafes` (
-	`Cafe_id` INT NOT NULL AUTO_INCREMENT,
-	`Cafe_name` varchar(100),
-	`Location_name` varchar(100),
-	PRIMARY KEY (`Cafe_id`)
+CREATE TABLE `Cafe_locations` (
+	`Location_name` varchar(100) NOT NULL,
+	PRIMARY KEY (`Location_name`)
 );
 
 DROP TABLE IF EXISTS `Time`;
@@ -34,9 +32,9 @@ DROP TABLE IF EXISTS `Time`;
 CREATE TABLE `Time` (
 	`Time_id` INT NOT NULL AUTO_INCREMENT,
 	`datetime` DATETIME,
-	`Day_id` INT NOT NULL,
-	`Month_id` INT NOT NULL,
-	`Year_id` INT NOT NULL,
+	`Day_id` INT,
+	`Month_id` INT,
+	`Year_id` INT,
 	PRIMARY KEY (`Time_id`)
 );
 
@@ -44,9 +42,9 @@ DROP TABLE IF EXISTS `Payments`;
 
 CREATE TABLE `Payments` (
 	`Payment_id` INT NOT NULL AUTO_INCREMENT,
-	`Customer_id` INT NOT NULL,
-	`Total_amount` FLOAT(7),
-	`Payment_type` varchar(35),
+	`Customer_id` INT,
+	`Total_amount` DECIMAL(10,2),
+	`Payment_type` varchar(100),
 	`Card_number` VARCHAR(255),
 	PRIMARY KEY (`Payment_id`)
 );
@@ -55,8 +53,8 @@ DROP TABLE IF EXISTS `Customers`;
 
 CREATE TABLE `Customers` (
 	`Customer_id` INT NOT NULL AUTO_INCREMENT,
-	`Forename` varchar(50),
-	`Surname` varchar(50),
+	`Forename` varchar(100),
+	`Surname` varchar(100),
 	PRIMARY KEY (`Customer_id`)
 );
 
@@ -90,7 +88,7 @@ ALTER TABLE `Orders` ADD CONSTRAINT `Orders_fk1` FOREIGN KEY (`Payment_id`) REFE
 
 ALTER TABLE `Orders` ADD CONSTRAINT `Orders_fk2` FOREIGN KEY (`Time_id`) REFERENCES `Time`(`Time_id`);
 
-ALTER TABLE `Items` ADD CONSTRAINT `Items_fk0` FOREIGN KEY (`Cafe_id`) REFERENCES `Cafes`(`Cafe_id`);
+ALTER TABLE `Items` ADD CONSTRAINT `Items_fk0` FOREIGN KEY (`Location_name`) REFERENCES `Cafe_locations`(`Location_name`);
 
 ALTER TABLE `Time` ADD CONSTRAINT `Time_fk0` FOREIGN KEY (`Day_id`) REFERENCES `Day`(`Day_id`);
 
