@@ -28,9 +28,7 @@ def start(event, context):
     conn = redshift_connect()
     extracted_dict, sql_code = extract(BUCKET_NAME, file_to_extract, SQL_TEXTFILE_KEY_NAME)
     transformed_dict = transform(extracted_dict)
-    load( transformed_dict, conn, sql_code)
-
-
+    load(transformed_dict, conn, sql_code)
     return transformed_dict
 
 
@@ -444,8 +442,6 @@ def card_num_format(card_num_list):
 
 ################## LOAD SECTION ################
 
-data = start()
-
 def create_database_tables(sql_code_string, connection):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
@@ -536,7 +532,7 @@ def reformatting_data_for_sql(data):
 
     return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, all_items
 
-def insert_data_into_tables(data,):
+def insert_data_into_tables(data, connection):
     """Inserts data into various database tables"""
     connection = mysql_db.make_connection()
     try:
