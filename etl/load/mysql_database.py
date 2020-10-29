@@ -10,25 +10,7 @@ data = start()
 #CONSTANTS NEEDED
 sql_code_filepath = './etl/load/database_sql_code.txt'
 
-#makes connection to adminer and creates database programmatically
-#NOTE: function will not be used for redshift - using already crreated database
-def create_database(database_name):
-    #making connection
-    mysql_server = db_connect.MySQL_Server()
-    connection = mysql_server.make_connection()
-    try:
-        with connection.cursor() as cursor:
-            #executing inserted SQL commands
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{database_name}`;")
-            #manually commits changes made by execute
-            connection.commit()
-    except Exception as e:
-        print(f"Exception Error: {e}")
-    finally:
-        #closing connection
-        connection.close()
-
-def create_database_tables(filepath):
+def create_database_tables(filepath, connection):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
 
@@ -123,7 +105,7 @@ def reformatting_data_for_sql(data):
 
     return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, all_items
 
-def insert_data_into_tables(data):
+def insert_data_into_tables(data,):
     """Inserts data into various database tables"""
     connection = mysql_db.make_connection()
     try:
