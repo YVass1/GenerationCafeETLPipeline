@@ -4,6 +4,7 @@ import os
 import csv
 import boto3
 import logging
+from dotenv import load_dotenv
 
 #In the below code, "Order" refers to all info on one line (date, name, drinks purchased, total price etc).
 #Whereas "Purchases" refer to just the drink information on the line. "Purchases" are one of several items in each "Order".
