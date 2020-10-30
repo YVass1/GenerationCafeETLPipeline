@@ -42,21 +42,21 @@ class Test_transform_purchases(unittest.TestCase):
     @patch('transform_purchase.transform_purchases')
     def test_if_transform_purchases_returns_list_of_dicts_seperated_by_comma(self, mock_transform_purchases):
         # Arrange
-          mock_purchases = ["Large - Flavoured latte - Gingerbread - 2.85", "Large - Flavoured latte - Vanilla - 2.85", \
-            "Large - Flavoured latte - Gingerbread - 2.85"]
+          mock_purchases = ["Large Flavoured latte - Gingerbread - 2.85", "Large Flavoured latte - Vanilla - 2.85", \
+            "Large Flavoured latte - Gingerbread - 2.85"]
      
-          expect = [{'drink_flavour': [None],
-          'drink_price': ['Flavoured latte'],
-          'drink_size': [None],
-          'drink_type': ['Large']},
-          {'drink_flavour': [None],
-          'drink_price': ['Flavoured latte'],
-          'drink_size': [None],
-          'drink_type': ['Large']},
-          {'drink_flavour': [None],
-          'drink_price': ['Flavoured latte'],
-          'drink_size': [None],
-          'drink_type': ['Large']}]
+          expect = [{'drink_flavour': ['Gingerbread'],
+          'drink_price': ['2.85'],
+          'drink_size': ['Large'],
+          'drink_type': ['Flavoured latte']},
+          {'drink_flavour': ['Vanilla'],
+          'drink_price': ['2.85'],
+          'drink_size': ['Large'],
+          'drink_type': ['Flavoured latte']},
+          {'drink_flavour': ['Gingerbread'],
+          'drink_price': ['2.85'],
+          'drink_size': ['Large'],
+          'drink_type': ['Flavoured latte']}]
 
           # Act
           actual = transform_purchases(mock_purchases)
