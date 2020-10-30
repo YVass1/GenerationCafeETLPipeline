@@ -499,7 +499,19 @@ def corresponding_unique_days_months_years(datetimes):
     unique_months = list(set(months))
     years = [dtime.strftime("%Y") for dtime in datetime_objects]
     unique_years = list(set(years))
-    return days, unique_days, months, unique_months, years, unique_years
+
+    unique_days_as_tuple_list = []
+    unique_months_as_tuple_list = []
+    unique_years_as_tuple_list = []
+
+    for day in unique_days:
+        unique_days_as_tuple_list.append((day, ))
+    for month in unique_months:
+        unique_months_as_tuple_list.append((month, ))
+    for year in unique_years:
+        unique_years_as_tuple_list.append((year, ))
+
+    return days, unique_days_as_tuple_list, months, unique_months_as_tuple_list, years, unique_years_as_tuple_list
 
 
 #Function to reformat data from dictionary for data to be suitable for MySQL statements 
