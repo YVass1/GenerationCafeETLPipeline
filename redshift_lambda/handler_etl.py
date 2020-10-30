@@ -88,8 +88,8 @@ def redshift_connect():
             password=creds["DbPassword"],
             port=port,
             host=host,
-            autocommit=True
             )
+        conn.set_session(autocommit = True)
         print("conn generation success")
     except Exception as ERROR:
         print("conn generation failure")
