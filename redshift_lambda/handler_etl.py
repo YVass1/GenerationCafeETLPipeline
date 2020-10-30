@@ -662,7 +662,7 @@ def insert_data_into_tables(data, connection):
 
             #inserting unique datetimes_info into table Time
             print("inserting unique datetimes_info into table Time")
-            sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s)"""
+            sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (TO_TIMESTAMP(%s, ‘YYYY/MM/DD HH24:MI:SS'), %s,%s,%s)"""
             cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
             connection.commit()
 
