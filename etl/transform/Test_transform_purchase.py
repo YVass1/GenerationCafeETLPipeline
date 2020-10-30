@@ -41,8 +41,7 @@ class Test_transform_purchases(unittest.TestCase):
         # Arrange
         mock_purchases = ["Large", "Flavoured latte - Gingerbread - 2.85", "Speciality Tea - Green - 1.30",\
              "Regular", "Flavoured latte - Vanilla - 3.85", "Tea - Mint tea - 1.85", "Large" ,"Hot chocolate - 2.90", "Smoothies - 2.75"]
-        expect = [{'Large', None, 'Regular', None, 'Large', None}, {'Flavoured latte', 'Speciality Tea', 'Flavoured latte', 'Tea', 'Hot chocolate', 'Smoothies'},\
-             {'Gingerbread', 'Green', 'Vanilla', 'Mint tea', None, None}, {'2.85', '1.30', '3.85', '1.85', '2.90', '2.75'}]
+        expect = [{}]
 
         # Act
         actual = transform_purchases(mock_purchases)
