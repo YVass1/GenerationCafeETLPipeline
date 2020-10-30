@@ -512,7 +512,11 @@ def reformatting_data_for_sql(data):
     customer_names = list(zip(first_names, last_names))
 
     locations = data["location"]
-    unique_locations = list(set(locations))
+    location_set = list(set(locations))
+    unique_locations = []
+
+    for loc in location_set:
+        unique_locations.append((loc, ))
 
     datetimes = data["datetime"]
     days, unique_days, months, unique_months, years, unique_years = corresponding_unique_days_months_years(datetimes)
@@ -547,11 +551,13 @@ def insert_data_into_tables(data, connection):
 
             #tier 1
             print("inserting data into customer table")
+            print(customer_names)
             #inserting data into customer table
             sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
             cursor.executemany(sql_command_insert_data_into_table, customer_names)
             connection.commit()
             print("inserting data cafe location table")
+            print(unique_locations)
             #inserting data into cafes locations table
             sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
             cursor.executemany(sql_command_insert_data_into_table, unique_locations)
