@@ -596,7 +596,7 @@ def insert_data_into_tables(data, connection):
 
             #Extracts each row's customer_id but in tuple form: (customer_id, )
             print("Extracts each row's customer_id but in tuple form: (customer_id, )") 
-            rows_of_customer_ids_tuples = cursor.FETCHALL()
+            rows_of_customer_ids_tuples = cursor.fetchall()
 
             #Extracting customer_id out of tuple for each row and appending to customer_ids
             print("Extracting customer_id out of tuple for each row and appending to customer_ids") 
