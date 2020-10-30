@@ -13,4 +13,4 @@ WHERE i.Item_id = o.Item_id
 SELECT o.Item_id, t.datetime
 FROM Orders AS o 
 INNER JOIN Time AS t
-WHERE o.time_id = t.time_id
+WHERE o.Time_id = t.Time_id

@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
 from transform_purchase import transform_purchases
-# WORK IN PROGRESS/NOT FINISHED
 
 # def transform_purchases(purchases):
     
@@ -34,9 +33,6 @@ from transform_purchase import transform_purchases
 
 
 # test = transform_purchases(["Large Flavoured latte - Gingerbread - 2.85", "Speciality Tea - Green - 1.30", "Regular Flavoured latte - Vanilla - 3.85", "Tea - Mint tea - 1.85", "Large Hot chocolate - 2.90", "Smoothies - 2.75"])
-
-#    expect = [{'Large', 'Large', 'Large'}, {'Flavoured latte', 'Flavoured latte', 'Flavoured latte'}, \
-#        {'Gingerbread', 'Vanilla', 'Gingerbread'}, {'2.85', '2.85', '2.85'}]
 
 class Test_transform_purchases(unittest.TestCase):
     @patch('transform_purchase.transform_purchases')
