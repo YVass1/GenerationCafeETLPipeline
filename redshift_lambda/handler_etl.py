@@ -15,7 +15,7 @@ def start(event, context):
     print("Team One Pipeline")
 
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "database_sql_code.txt"
+    SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
 
     load_dotenv()
     logging.getLogger().setLevel(0)
@@ -88,28 +88,14 @@ def redshift_connect():
             password=creds["DbPassword"],
             port=port,
             host=host)
+        print("conn generation success")
     except Exception as ERROR:
+        print("conn generation failure")
         print("Connection Issue: " + str(ERROR))
         sys.exit(1)
 
     print('connected')
-    
-    ### This is what Stuart had in the handler.py from the start.
-    # try:
-    #     cursor = conn.cursor()
-    #     cursor.execute("create table test_table (id int)")
-    #     cursor.close()
-    #     conn.commit()
-    #     conn.close()
-
-    # except Exception as ERROR:
-    #     print("Execution Issue: " + str(ERROR))
-    #     sys.exit(1)
-
-    print('executed statement')
-
     return conn
-    
 
 def get_all_bucket_keys(bucket_name):
     s3 = boto3.client('s3')
@@ -124,7 +110,7 @@ def get_all_bucket_keys(bucket_name):
     return key_names
 
 
-def extract(bucket_name, key_name, sql_textfile_name):
+def extract(bucket_name, cafe_csv_key_name, sql_textfile_name):
     raw_data, sql_code = read_from_s3(bucket_name, cafe_csv_key_name, sql_textfile_name)
     raw_lines = convert_data_to_lines(raw_data)
     comma_separated_lines = split_lines(raw_lines)
@@ -154,7 +140,7 @@ def load(cleaned_data, connection, sql_code_txtfile):
     
     create_database_tables(sql_code_txtfile, connection)
 
-    insert_data_into_tables(data, connection)
+    insert_data_into_tables(cleaned_data, connection)
 
     return
 
@@ -422,11 +408,9 @@ def transform_purchases(purchases):
  
     return list_of_dicts
 
-
 def clean_total_prices(raw_list):
-    cleaned_total_prices = [(price*100) for price in raw_list]
+    cleaned_total_prices = [int(price.replace(".","")) for price in raw_list]
     return cleaned_total_prices
-
 
 def card_num_format(card_num_list):
     starred_numbers = []
@@ -440,6 +424,7 @@ def card_num_format(card_num_list):
 
     return starred_numbers
 
+
 ################## LOAD SECTION ################
 
 def create_database_tables(sql_code_string, connection):
@@ -447,37 +432,45 @@ def create_database_tables(sql_code_string, connection):
      with tables using file containing SQL commands."""
 
     try:
-            commands_string = re.sub(r"[\n\t]*", "", sql_code_string)
-            
-            #potential code for psygcopg2 if pymysql CLIENT.flag or equivalent not there and so
-            #psygcopg2 can not execute single string full of different queries
-            #separated_strings = commands_string.split(";")
-            #for string in separated_strings:
-            #    print(string)
-
+        #Reformatting string to remove line breaks and tabs
+        #re is an imported module for formatting
+        reformatted_sql_string = re.sub(r"[\n\t]*", "", sql_code_string).strip()
+        
+        #creating list of strings each contaning SQL statement
+        sql_string_list = reformatted_sql_string.split(";")
+        
+        #Executing each SQL statement 
         with connection.cursor() as cursor:
-            cursor.execute(commands_string)
+            for sql_command in sql_string_list:
+                if type(sql_command) == str:
+                    if sql_command.isspace() == False and len(sql_command) > 0:
+                        print(sql_command)
+                        cursor.execute(sql_command)
+
     except Exception as e:
+        print("Executing empty string")
         print(f"Exception Error: {e}")
-    finally:
-        connection.close()
+
 
 #Function to convert any Python None values in the data to NULL (SQL only recognises NULL)
 def convert_none_data_to_null(data):
-    """Checks if any value in data structure has None value, if so converts to 'NULL'.
-    NOTE: Function can only check these data structure types: [[(),()],[(),()]] or [(),()]. """
-    if isinstance(data,list):
-        for structure in data:
-            if isinstance(structure, tuple):
-                for element in structure:
-                    if element is None:
-                        element = "NULL"      
-            elif isinstance(structure, list):
-                for inner_list in structure:
-                    for element in inner_list:
-                        if element is None:
-                            element = "NULL"
-    return data
+    return list(convert_iterable_to_list_with_nones(data))
+
+
+def convert_iterable_to_list_with_nones(iterable):
+    iterable_type = type(iterable)
+    list_with_nulls = []
+    
+    for item in iterable:
+        if type(item) == tuple or type(item) == list:
+            list_with_nulls.append(convert_iterable_to_list_with_nones(item))
+        elif item == None:
+            list_with_nulls.append("NULL")
+        else:
+            list_with_nulls.append(item)
+
+    return iterable_type(list_with_nulls)
+    
 
 #Function checks if the tuple's chosen index has a None value in there or not    
 def is_value_none(index, tuple_data):
@@ -488,9 +481,11 @@ def is_value_none(index, tuple_data):
         is_none = True
     return is_none
 
+
 #Function which given a datetime string, finds the corresponding day, month and year. 
 #Returns out only all the unique days, months and years found from datetimes passed in
 def corresponding_unique_days_months_years(datetimes):
+    print("corresponding_unique_days_months_years")
     """Returns lists of unique days, months and years found from datetimes passed in"""
     datetime_objects = [datetime.datetime.strptime(dtime, '%Y-%m-%d %H:%M:%S') for dtime in datetimes]
     
@@ -502,8 +497,10 @@ def corresponding_unique_days_months_years(datetimes):
     unique_years = list(set(years))
     return days, unique_days, months, unique_months, years, unique_years
 
+
 #Function to reformat data from dictionary for data to be suitable for MySQL statements 
 def reformatting_data_for_sql(data):
+    print("reformatting_data_for_sql")
     """Extracts from input dictionary and reformats relevant data into a required format for MySQL statements. """
     
     first_names  = data["fname"]
@@ -532,53 +529,58 @@ def reformatting_data_for_sql(data):
 
     return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, all_items
 
-def insert_data_into_tables(data, connection):
-    """Inserts data into various database tables"""
-    connection = mysql_db.make_connection()
-    try:
-        #making connection to database
-        with connection.cursor() as cursor:
 
+def insert_data_into_tables(data, connection):
+    print("insert_data_into_tables")
+    """Inserts data into various database tables"""
+    try:
+        with connection.cursor() as cursor:
+            print("got cursor")
             #reformatted data suitable for MySQL statements
             datetimes, customer_names, unique_locations, days, unique_days,months, unique_months, years, unique_years, total_prices, payment_methods,card_numbers, unique_items, all_purchases, all_items = reformatting_data_for_sql(data)
 
             #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
             #tier 1
-
+            print("inserting data into customer table")
             #inserting data into customer table
-            sql_command_insert_data_into_table = 'INSERT INTO `Customers` (`Forename`, `Surname`) VALUES (%s, %s)'
+            sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
             cursor.executemany(sql_command_insert_data_into_table, customer_names)
-            
+            print("inserting data cafe location table")
             #inserting data into cafes locations table
-            sql_command_insert_data_into_table = 'INSERT INTO `Cafe_locations` (`Location_name`) VALUES (%s)'
+            sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
             cursor.executemany(sql_command_insert_data_into_table, unique_locations)
-
+            print("inserting data day;month;year tables")
             #inserting data into day, month, year tables
-            sql_command_insert_data_into_table = "INSERT INTO `Day` (`Day`) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s);"
             cursor.executemany( sql_command_insert_data_into_table, unique_days)
-            sql_command_insert_data_into_table = "INSERT INTO `Month` (`Month`) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Month (Month) VALUES (%s);"
             cursor.executemany( sql_command_insert_data_into_table, unique_months)
-            sql_command_insert_data_into_table = "INSERT INTO `Year` (`Year`) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Year (Year) VALUES (%s);"
             cursor.executemany( sql_command_insert_data_into_table, unique_years)
 
             #tier 2
 
             #inserting data into payments table
             #selecting corresponding customer ids
-            cursor.execute('SELECT c.Customer_id FROM Customers as c;')
+            print("selecting corresponding customer ids")
+            cursor.execute('SELECT c.Customer_id FROM Customers AS c')
 
-            #Extracts each row's customer_id but in tuple form: (customer_id, ) 
-            rows_of_customer_ids_tuples = cursor.fetchall()
+            #Extracts each row's customer_id but in tuple form: (customer_id, )
+            print("Extracts each row's customer_id but in tuple form: (customer_id, )") 
+            rows_of_customer_ids_tuples = cursor.FETCHALL()
 
             #Extracting customer_id out of tuple for each row and appending to customer_ids
+            print("Extracting customer_id out of tuple for each row and appending to customer_ids") 
             customer_ids = [row[0] for row in rows_of_customer_ids_tuples]
 
             #reformatting data --> each customer_id with customer's payment info in a tuple
+            print("reformatting data --> each customer_id with customer's payment info in a tuple") 
             payments_info = list(zip(customer_ids, total_prices, payment_methods, card_numbers))
             
             #inserting payment info data into payments table
-            sql_command_insert_data_into_table = """INSERT INTO `Payments` (`Customer_id`,`Total_amount`,`Payment_type`,`Card_number`) VALUES (%s, %s, %s,%s) ;"""
+            print("inserting payment info data into payments table") 
+            sql_command_insert_data_into_table = """INSERT INTO Payments (Customer_id, Total_amount, Payment_type, Card_number) VALUES (%s, %s, %s,%s);"""
             cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
 
             #Inserting data into table Time
@@ -588,47 +590,54 @@ def insert_data_into_tables(data, connection):
             #Looping through days list which is 1-to-1 mapping with datetimes list
             #For datetimes corresponding day e.g. Monday, extracting its Day_id and
             #append to day_ids list
+            print("append to day_ids list")
             day_ids = []
             for day in days:
-                cursor.execute(f'SELECT d.Day_id FROM Day as d WHERE d.Day = %s', day )
+                cursor.execute(f'SELECT d.Day_id FROM Day AS d WHERE d.Day = %s', day )
                 day_id = cursor.fetchone()[0]
                 day_ids.append(day_id)
 
             #Looping through months list which is 1-to-1 mapping with datetimes list
             #For datetimes corresponding month e.g. July, extracting its Month_id and
             #append to month_ids list
+            print("append to month_ids list")
             month_ids = []
             for month in months:
-                cursor.execute(f'SELECT d.Month_id FROM Month as d WHERE d.Month = %s', month )
+                cursor.execute(f'SELECT d.Month_id FROM Month AS d WHERE d.Month = %s', month )
                 month_id = cursor.fetchone()[0]
                 month_ids.append(month_id)
             
             #Looping through years list which is 1-to-1 mapping with datetimes list
             #For datetimes corresponding day e.g. 2020, extracting its Year_id and
-            #append to years_ids list
+            #append to year_ids list
+            print("append to year_ids list")
             year_ids = []
             for year in years:
-                cursor.execute(f'SELECT d.Year_id FROM Year as d WHERE d.Year = %s', year )
+                cursor.execute(f'SELECT d.Year_id FROM Year AS d WHERE d.Year = %s', year )
                 year_id = cursor.fetchone()[0]
                 year_ids.append(year_id)
         
             #Joining lists to make a list of tuples
+            print("Joining lists to make a list of tuples")
             full_datetimes_info = list(zip(datetimes, day_ids, month_ids, year_ids))
             #OUTPUT FORMAT: 
             #full_datetimes_info = [(datetime_1, day_id, month_id, year_id),
             #(datetime_2, day_id, month_id, year_id), ...]
 
             #List of only unique datetimes_info
+            print("List of only unique datetimes_info")
             unique_datetimes =  list(set(full_datetimes_info))
 
             #inserting unique datetimes_info into table Time
-            sql_command_insert_data_into_table = """INSERT INTO `Time` (`datetime`,`Day_id`,`Month_id`,`Year_id`) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s);"""
+            print("inserting unique datetimes_info into table Time")
+            sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s)"""
             cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
 
             #Items table
 
             #Inserting data into Items table
-            sql_command_insert_data_into_table = """INSERT INTO `Items` (`Location_name`,`Price`,`Drink_type`,`Drink_flavour`, `Drink_size`) VALUES (%s, %s, %s,%s,%s) ;"""
+            print("inserting data into Items table")
+            sql_command_insert_data_into_table = """INSERT INTO Items (Location_name, Price , Drink_type , Drink_flavour, Drink_size) VALUES (%s, %s, %s,%s,%s)"""
             cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
             
             #tier 3
@@ -637,23 +646,27 @@ def insert_data_into_tables(data, connection):
 
             #Looping through datetimes, which have 1-to-1 relationship with customer_ids/payment_ids
             #Selecting Time_id and appending to time_ids list
+            print("Selecting Time_id and appending to time_ids list")
             time_ids = []
             for time in datetimes:
-               cursor.execute("""SELECT t.Time_id From Time as t WHERE t.datetime = %s""", time)
+               cursor.execute("""SELECT t.Time_id From Time AS t WHERE t.datetime = %s""", time)
                time_id = cursor.fetchone()[0]
                time_ids.append(time_id)
 
             #Looping through customer_names list
             #Selecting payment_id connected to a customer_id which is connected to customer name
+            print("Selecting payment_id connected to a customer_id which is connected to customer name")
             payment_ids = []
             for name in customer_names:
-                cursor.execute("""select p.Payment_id from Payments as p join Customers as c on c.Customer_id = p.Customer_id where c.forename = %s and c.surname = %s; """, name)
+                cursor.execute("""select p.Payment_id from Payments AS p join Customers AS c on c.Customer_id = p.Customer_id where c.forename = %s and c.surname = %s; """, name)
                 payment_id = cursor.fetchone()[0]
                 payment_ids.append(payment_id)
 
             all_purchases_with_id = list(zip(payment_ids, convert_none_data_to_null(all_purchases), time_ids))
             
             #Selecting items_id for the corresponding payment_id
+
+            print("Selecting items_id for the corresponding payment_id")
             item_ids = []
             orders_info = []
 
@@ -664,11 +677,14 @@ def insert_data_into_tables(data, connection):
                     drink_size_index = 4
                     
                     if is_value_none(drink_flavour_index,drink_order) and is_value_none(drink_size_index, drink_order):
+                        
                         drink_order_list = list(drink_order)
+
+                        #removing index 3 and everything afterwards
                         del drink_order_list[3:]
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
                         AND Drink_size IS NULL """, drink_order_list)
                         
                         item_id = cursor.fetchone()[0]
@@ -679,10 +695,10 @@ def insert_data_into_tables(data, connection):
 
                     elif is_value_none( drink_flavour_index, drink_order):
                         drink_order_list = list(drink_order)
-                        drink_order_list.remove(drink_order_list[3])
+                        drink_order_list.remove(drink_order_list[drink_flavour_index])
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour IS NULL
                         AND Drink_size = %s """, drink_order_list)
                         
                         item_id = cursor.fetchone()[0]
@@ -694,10 +710,10 @@ def insert_data_into_tables(data, connection):
                     elif is_value_none(drink_size_index ,drink_order):
                         
                         drink_order_list = list(drink_order)
-                        drink_order_list.remove(drink_order_list[4])
+                        drink_order_list.remove(drink_order_list[drink_size_index])
                         
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size IS NULL """, drink_order_list)
                         
                         time_id = cursor.fetchone()[0]
@@ -708,7 +724,7 @@ def insert_data_into_tables(data, connection):
                     
                     else:
                         cursor.execute("""SELECT i.Item_id FROM  
-                        Items as i WHERE i.Location_name = %s AND i.Price LIKE %s AND i.Drink_type = %s AND i.Drink_flavour = %s
+                        Items AS i WHERE i.Location_name = %s AND i.Price = %s AND i.Drink_type = %s AND i.Drink_flavour = %s
                         AND Drink_size= %s """, drink_order)
                         
                         item_id = cursor.fetchone()[0]
@@ -717,13 +733,12 @@ def insert_data_into_tables(data, connection):
                         
                         orders_info.append((payment_id,item_id,time_id))
             
-            sql_command_insert_data_into_table = """INSERT INTO `Orders` (Payment_id, Item_id, Time_id)  VALUES (%s, %s, %s) ;"""           
+            print("executing many")
+            sql_command_insert_data_into_table = """INSERT INTO Orders (Payment_id, Item_id, Time_id) VALUES (%s, %s, %s)"""           
             cursor.executemany(sql_command_insert_data_into_table, orders_info)
-
-    except Exception as e:
-        #Rolls back any sql statements committed when error occurs partway to perserve data integrity
-        connection.rollback()
-        print(f"Exception Error: {e}")
+    # except Exception as e:
+    #     #Rolls back any sql statements committed when error occurs partway to perserve data integrity
+    #     connection.ROLLBACK()
+    #     print(f"Exception Error: {e}")
     finally:
         connection.close()
-
