@@ -549,23 +549,23 @@ def insert_data_into_tables(data, connection):
             print("inserting data into customer table")
             #inserting data into customer table
             sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
-            cursor.executemany(sql_command_insert_data_into_table, (customer_names,))
+            cursor.executemany(sql_command_insert_data_into_table, customer_names)
             connection.commit()
             print("inserting data cafe location table")
             #inserting data into cafes locations table
             sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
-            cursor.executemany(sql_command_insert_data_into_table, (unique_locations,))
+            cursor.executemany(sql_command_insert_data_into_table, unique_locations)
             connection.commit()
             print("inserting data day;month;year tables")
             #inserting data into day, month, year tables
             sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s);"
-            cursor.executemany( sql_command_insert_data_into_table, (unique_days,))
+            cursor.executemany( sql_command_insert_data_into_table, unique_days)
             connection.commit()
             sql_command_insert_data_into_table = "INSERT INTO Month (Month) VALUES (%s);"
-            cursor.executemany( sql_command_insert_data_into_table, (unique_months,))
+            cursor.executemany( sql_command_insert_data_into_table, unique_months)
             connection.commit()
             sql_command_insert_data_into_table = "INSERT INTO Year (Year) VALUES (%s);"
-            cursor.executemany( sql_command_insert_data_into_table, (unique_years,))
+            cursor.executemany( sql_command_insert_data_into_table, unique_years)
             connection.commit()
 
             #tier 2
@@ -591,7 +591,7 @@ def insert_data_into_tables(data, connection):
             #inserting payment info data into payments table
             print("inserting payment info data into payments table") 
             sql_command_insert_data_into_table = """INSERT INTO Payments (Customer_id, Total_amount, Payment_type, Card_number) VALUES (%s, %s, %s,%s);"""
-            cursor.executemany(sql_command_insert_data_into_table, (convert_none_data_to_null(payments_info), ))
+            cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
             connection.commit()
 
             #Inserting data into table Time
@@ -604,7 +604,7 @@ def insert_data_into_tables(data, connection):
             print("append to day_ids list")
             day_ids = []
             for day in days:
-                cursor.execute(f'SELECT d.Day_id FROM Day AS d WHERE d.Day = %s', day )
+                cursor.execute(f'SELECT d.Day_id FROM Day AS d WHERE d.Day = %s', (day, ) )
                 connection.commit()
                 day_id = cursor.fetchone()[0]
                 day_ids.append(day_id)
@@ -615,7 +615,7 @@ def insert_data_into_tables(data, connection):
             print("append to month_ids list")
             month_ids = []
             for month in months:
-                cursor.execute(f'SELECT d.Month_id FROM Month AS d WHERE d.Month = %s', month )
+                cursor.execute(f'SELECT d.Month_id FROM Month AS d WHERE d.Month = %s', (month, ) )
                 connection.commit()
                 month_id = cursor.fetchone()[0]
                 month_ids.append(month_id)
@@ -626,7 +626,7 @@ def insert_data_into_tables(data, connection):
             print("append to year_ids list")
             year_ids = []
             for year in years:
-                cursor.execute(f'SELECT d.Year_id FROM Year AS d WHERE d.Year = %s', year )
+                cursor.execute(f'SELECT d.Year_id FROM Year AS d WHERE d.Year = %s', (year, ) )
                 connection.commit()
                 year_id = cursor.fetchone()[0]
                 year_ids.append(year_id)
@@ -645,7 +645,7 @@ def insert_data_into_tables(data, connection):
             #inserting unique datetimes_info into table Time
             print("inserting unique datetimes_info into table Time")
             sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (STR_TO_DATE(%s, "%%Y-%%m-%%d %%H:%%i:%%S"), %s,%s,%s)"""
-            cursor.executemany(sql_command_insert_data_into_table, (unique_datetimes, ))
+            cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
             connection.commit()
 
             #Items table
@@ -653,7 +653,7 @@ def insert_data_into_tables(data, connection):
             #Inserting data into Items table
             print("inserting data into Items table")
             sql_command_insert_data_into_table = """INSERT INTO Items (Location_name, Price , Drink_type , Drink_flavour, Drink_size) VALUES (%s, %s, %s,%s,%s)"""
-            cursor.executemany(sql_command_insert_data_into_table, (convert_none_data_to_null(unique_items), ))
+            cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
             connection.commit()
             
             #tier 3
@@ -665,7 +665,7 @@ def insert_data_into_tables(data, connection):
             print("Selecting Time_id and appending to time_ids list")
             time_ids = []
             for time in datetimes:
-               cursor.execute("""SELECT t.Time_id From Time AS t WHERE t.datetime = %s""", time)
+               cursor.execute("""SELECT t.Time_id From Time AS t WHERE t.datetime = %s""", (time, ))
                connection.commit()
                time_id = cursor.fetchone()[0]
                time_ids.append(time_id)
@@ -757,7 +757,7 @@ def insert_data_into_tables(data, connection):
             
             print("executing many")
             sql_command_insert_data_into_table = """INSERT INTO Orders (Payment_id, Item_id, Time_id) VALUES (%s, %s, %s)"""           
-            cursor.executemany(sql_command_insert_data_into_table, (orders_info, ))
+            cursor.executemany(sql_command_insert_data_into_table, orders_info)
             connection.commit()
             cursor.close()
     # except Exception as e:
