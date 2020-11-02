@@ -27,9 +27,8 @@ functions:
       DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
       DB_NAME: team1db
       DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
-  users:
+  handler_etl:
     handler: handler_etl.start
-    module: redshift_lambda
     events:
       - s3:
         bucket: cafe-data-data-pump-dev-team-1
