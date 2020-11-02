@@ -15,12 +15,12 @@ def start(event, context):
     print("Team One Pipeline")
 
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
+    SQL_TEXTFILE_KEY_NAME = "create_table_sql_code.txt"
 
     load_dotenv()
     logging.getLogger().setLevel(0)
     
-    file_to_extract = get_key_to_extract(event, BUCKET_NAME)
+    file_to_extract = get_key_to_extract(event)
 
     if file_to_extract == None:
         return None
@@ -32,34 +32,14 @@ def start(event, context):
     return transformed_dict
 
 
-def get_key_to_extract(event, bucket_name):
-    keys = get_all_bucket_keys(bucket_name)
+def get_key_to_extract(event):
 
-    if event["is_using_current_date"] == "True":
-        key_to_extract = get_todays_key(keys)
-    else:
-        key_to_extract = keys[0]
+    key_to_extract = event["Records"][0]["object"]["key"]
         
     return key_to_extract
 
 
-def get_todays_key(keys):
-    raw_date_today = str(datetime.date.today())
-    split_date_today = raw_date_today.split("-")
-    date_today_correct_order = split_date_today[2] + "-" + split_date_today[1] + "-" + split_date_today[0]
-    
-    return_key = None
-    
-    for key in keys:
-        key_date = key.split("_")[-2]
-        
-        if key_date == date_today_correct_order:
-            return_key = key
-            break
-    
-    return return_key
 
-  
 def redshift_connect():
     host = os.getenv("DB_HOST")
     port = int(os.getenv("DB_PORT"))
@@ -98,19 +78,6 @@ def redshift_connect():
 
     print('connected')
     return conn
-
-def get_all_bucket_keys(bucket_name):
-    s3 = boto3.client('s3')
-    object_list = s3.list_objects_v2(Bucket = bucket_name)
-    contents = object_list["Contents"]
-    
-    key_names = []
-    
-    for key in contents:
-        key_names.append(key["Key"])
-        
-    return key_names
-
 
 def extract(bucket_name, cafe_csv_key_name, sql_textfile_name):
     raw_data, sql_code = read_from_s3(bucket_name, cafe_csv_key_name, sql_textfile_name)
@@ -528,7 +495,7 @@ def reformatting_data_for_sql(data):
     unique_locations = []
 
     for loc in location_set:
-        unique_locations.append((loc, ))
+        unique_locations.append((loc,loc))
 
     datetimes = data["datetime"]
     days, unique_days, months, unique_months, years, unique_years = corresponding_unique_days_months_years(datetimes)
@@ -571,7 +538,7 @@ def insert_data_into_tables(data, connection):
             print("inserting data cafe location table")
             print(unique_locations)
             #inserting data into cafes locations table
-            sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
+            sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s) ON DUPLICATE KEY UPDATE Location_name = %s '
             cursor.executemany(sql_command_insert_data_into_table, unique_locations)
             connection.commit()
             print("inserting data day;month;year tables")
