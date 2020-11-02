@@ -12,7 +12,7 @@ def start(event, context):
     load_dotenv()
     logging.getLogger().setLevel(0)
     
-    file_to_extract = get_key_to_extract(event, BUCKET_NAME)
+    file_to_extract = get_key_to_extract(event)
 
     if file_to_extract == None:
         return None
@@ -20,40 +20,11 @@ def start(event, context):
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
     return extracted_dict
 
-def get_key_to_extract(event, bucket_name):
-    keys = get_all_bucket_keys(bucket_name)
+def get_key_to_extract(event):
 
     key_to_extract = event["Records"][0]["object"]["key"]
         
     return key_to_extract
-
-def get_todays_key(keys):
-    raw_date_today = str(datetime.date.today())
-    split_date_today = raw_date_today.split("-")
-    date_today_correct_order = split_date_today[2] + "-" + split_date_today[1] + "-" + split_date_today[0]
-    
-    return_key = None
-    
-    for key in keys:
-        key_date = key.split("_")[-2]
-        
-        if key_date == date_today_correct_order:
-            return_key = key
-            break
-    
-    return return_key
-
-def get_all_bucket_keys(bucket_name):
-    s3 = boto3.client('s3')
-    object_list = s3.list_objects_v2(Bucket = bucket_name)
-    contents = object_list["Contents"]
-    
-    key_names = []
-    
-    for key in contents:
-        key_names.append(key["Key"])
-        
-    return key_names
 
 def extract(bucket_name, cafe_csv_key_name):
     raw_data = read_from_s3(bucket_name, cafe_csv_key_name)
