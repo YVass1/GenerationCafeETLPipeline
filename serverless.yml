@@ -27,6 +27,8 @@ functions:
       DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
       DB_NAME: team1db
       DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
+
+functions:
   users:
     handler: handler_etl.start
     events:
