@@ -27,7 +27,7 @@ functions:
     events:
       - s3:
           bucket: cafe-data-data-pump-dev-team-1
-          event: s3:ObjectCreated:*
+          event: s3:ObjectCreated:Put
           rules:
             - suffix: .csv
           existing: true
@@ -53,7 +53,7 @@ functions:
   redshift-lambda:
     runtime: python3.8
     handler: handler_etl.start
-    module: redshift_lambda
+    module: lambdas
     vpc:
       securityGroupIds:
         - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
