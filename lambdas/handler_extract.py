@@ -1,15 +1,18 @@
 import psycopg2
 from dotenv import load_dotenv
 import csv
+import os
 import boto3
+import json
 import logging
 
 def start(event, context):
     print("Team One Pipeline")
 
-    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-
     load_dotenv()
+    BUCKET_NAME = os.getenv("BUCKET_NAME")
+    QUEUE_NAME = os.getenv("QUEUE_NAME")
+    
     logging.getLogger().setLevel(0)
     
     file_to_extract = get_key_to_extract(event)
@@ -18,15 +21,44 @@ def start(event, context):
         return None
 
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
+    json_dict = json_serialize_dict(extracted_dict)
+    send_json_to_queue(json_dict, QUEUE_NAME)
 
     debug_prints(extracted_dict)
     return extracted_dict
+
 
 def get_key_to_extract(event):
 
     key_to_extract = event["Records"][0]["s3"]["object"]["key"] #TODO: not necessarily a 0-index, foreach instead
         
     return key_to_extract
+
+
+def json_serialize_dict(dict_):
+    json_dict = json.dumps(dict_)
+
+    return json_dict
+
+
+def send_json_to_queue(json_dict, queue_name):
+    sqs = boto3.client('sqs')
+
+    # Send message to SQS queue
+    response = sqs.send_message(
+        QueueUrl = queue_name,
+        DelaySeconds = 1,
+        MessageAttributes = {
+            'TestAttribute': {
+                'DataType': 'String',
+                'StringValue': 'Hello World'
+            },
+        },
+        MessageBody = json_dict
+    )
+
+    print(response['MessageId'])
+
 
 def extract(bucket_name, cafe_csv_key_name):
     raw_data = read_from_s3(bucket_name, cafe_csv_key_name)
@@ -37,6 +69,7 @@ def extract(bucket_name, cafe_csv_key_name):
     
     dict_ = generate_dictionary(combined_purchase_orders)
     return dict_
+
 
 def read_from_s3(bucket, cafe_csv_key):
     s3 = boto3.client('s3')

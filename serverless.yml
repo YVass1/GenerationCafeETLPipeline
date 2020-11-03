@@ -31,6 +31,9 @@ functions:
           rules:
             - suffix: .csv
           existing: true
+    environment:
+      QUEUE_NAME: TeamOneTestQueue
+      BUCKET_NAME: cafe-data-data-pump-dev-team-1
   handler-transform:
     runtime: python3.8
     handler: handler_transform.start
@@ -65,9 +68,3 @@ functions:
       DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
       DB_NAME: team1db
       DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
-    
-      # - sqs:
-      #     arn:
-      #       Fn::GetAtt:
-      #         - TeamOneTestQueue
-      #         - Arn
