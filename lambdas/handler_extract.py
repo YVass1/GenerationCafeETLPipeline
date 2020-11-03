@@ -43,7 +43,7 @@ def json_serialize_dict(dict_):
 
 def send_json_to_queue(json_dict, queue_name):
     sqs = boto3.client('sqs')
-    queue_url = sqs.get_queue_url(queue_name)
+    queue_url = sqs.get_queue_url(QueueName = queue_name)
 
     # Send message to SQS queue
     response = sqs.send_message(
