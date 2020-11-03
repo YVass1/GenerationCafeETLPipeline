@@ -165,21 +165,8 @@ def debug_prints(dict_):
     print("Card Numbers of first 10 orders:")
     print(dict_["card_number"][:10])
 
-    print("FIRST 10 PURCHASE INFOS")
-    for purchase in dict_["purchase"][:10]:
-        print("INFO:")
-
-        print("Drink Sizes:")
-        print(purchase["drink_size"])
-
-        print("Drink Names:")
-        print(purchase["drink_type"])
-
-        print("Drink Flavours:")
-        print(purchase["drink_flavour"])
-
-        print("Drink Price:")
-        print(purchase["drink_price"])
+    print("Purchases of first 10 orders:")
+    print(dict_["purchase"][:10])
 
     print()
     print("To check invalid card numbers are correctly set to None, the following two numbers should be equal:")
