@@ -11,7 +11,7 @@ def start(event, context):
 
     load_dotenv()
     BUCKET_NAME = os.getenv("BUCKET_NAME")
-    QUEUE_NAME = os.getenv("TEST_QUEUE_URL")
+    QUEUE_NAME = os.getenv("QUEUE_NAME")
     
     logging.getLogger().setLevel(0)
     
@@ -43,10 +43,11 @@ def json_serialize_dict(dict_):
 
 def send_json_to_queue(json_dict, queue_name):
     sqs = boto3.client('sqs')
+    queue_url = sqs.get_queue_url(queue_name)
 
     # Send message to SQS queue
     response = sqs.send_message(
-        QueueUrl = queue_name,
+        QueueUrl = queue_url,
         DelaySeconds = 1,
         MessageAttributes = {
             'TestAttribute': {
