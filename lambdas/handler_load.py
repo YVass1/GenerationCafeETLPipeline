@@ -7,6 +7,7 @@ import logging
 import datetime 
 from dotenv import load_dotenv
 
+
 def start(event, context):
     print("Team One Pipeline")
     
@@ -21,6 +22,7 @@ def start(event, context):
     conn = redshift_connect()
     # transformed_dict = transform.start()
     # load(transformed_dict, conn, sql_code)
+
 
 def redshift_connect():
     host = os.getenv("DB_HOST")
