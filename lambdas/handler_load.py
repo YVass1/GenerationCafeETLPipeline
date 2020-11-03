@@ -6,8 +6,8 @@ import boto3
 import logging
 import datetime 
 from dotenv import load_dotenv
-import redshift_lambda.handler_extract as extract
-import redshift_lambda.handler_transform as transform
+import lambdas.handler_extract as extract
+import lambdas.handler_transform as transform
 
 def start(event, context):
     print("Team One Pipeline")

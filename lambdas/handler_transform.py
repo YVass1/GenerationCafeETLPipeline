@@ -3,7 +3,7 @@ import csv
 import logging
 import datetime 
 import re
-import redshift_lambda.handler_extract as extract
+import lambdas.handler_extract as extract
 import json
 from dotenv import load_dotenv
 import os
