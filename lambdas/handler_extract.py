@@ -18,11 +18,13 @@ def start(event, context):
         return None
 
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
+
+    debug_prints(extracted_dict)
     return extracted_dict
 
 def get_key_to_extract(event):
 
-    key_to_extract = event["Records"][0]["object"]["key"]
+    key_to_extract = event["Records"][0]["s3"]["object"]["key"] #TODO: not necessarily a 0-index, foreach instead
         
     return key_to_extract
 
