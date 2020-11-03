@@ -32,7 +32,7 @@ functions:
             - suffix: .csv
           existing: true
     environment:
-      QUEUE_NAME: !Ref team1testqueue
+      QUEUE_URL: !Ref team1testqueue
       BUCKET_NAME: cafe-data-data-pump-dev-team-1
   handler-transform:
     runtime: python3.8
