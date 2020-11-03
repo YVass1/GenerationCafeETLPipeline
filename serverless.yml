@@ -43,6 +43,12 @@ functions:
     runtime: python3.8
     handler: handler_transform.start
     module: lambdas
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - Team1EtoTqueue
+              - Arn
     environment:
       TTOLQUEUE_URL: !Ref team1TtoLqueue
   handler-load:

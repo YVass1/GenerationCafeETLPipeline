@@ -29,10 +29,8 @@ def start(event, context):
 
 
 def get_key_to_extract(event):
-
-    key_to_extract = event["Records"][0]["s3"]["object"]["key"] #TODO: not necessarily a 0-index, foreach instead
-        
-    return key_to_extract
+    #TODO: not necessarily a 0-index, foreach instead
+    return event["Records"][0]["s3"]["object"]["key"]
 
 
 def json_serialize_dict(dict_):

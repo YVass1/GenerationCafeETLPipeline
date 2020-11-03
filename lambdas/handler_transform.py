@@ -8,40 +8,45 @@ import os
 def start(event, context):
     print("Team One Pipeline")
 
-    dummy_extracted_dict = {
-    "datetime": [
-        "11/10/2020 08:11"
-    ],
-    "location": [
-        "Sandford"
-    ],
-    "customer_name": [
-        "Sergeant Angel"
-    ],
-    "purchase": [
-        "Regular Cornetto - Classic - 2.55"
-    ],
-    "total_price": [
-        "2.55"
-    ],
-    "payment_method": [
-        "CARD"
-    ],
-    "card_number": [
-        "5359353452571234"
-    ]
-    }
+    # dummy_extracted_dict = {
+    # "datetime": [
+    #     "11/10/2020 08:11"
+    # ],
+    # "location": [
+    #     "Sandford"
+    # ],
+    # "customer_name": [
+    #     "Sergeant Angel"
+    # ],
+    # "purchase": [
+    #     "Regular Cornetto - Classic - 2.55"
+    # ],
+    # "total_price": [
+    #     "2.55"
+    # ],
+    # "payment_method": [
+    #     "CARD"
+    # ],
+    # "card_number": [
+    #     "5359353452571234"
+    # ]
+    # }
+
     load_dotenv()
     logging.getLogger().setLevel(0)
 
     TTOLQUEUE_URL = os.getenv("TTOLQUEUE_URL")
 
-    transformed_dict = transform(dummy_extracted_dict)
+    extracted_dict = get_dict_from_queue(event)
+    transformed_dict = transform(extracted_dict)
     json_dict = json_serialize_dict(transformed_dict)
     send_json_to_queue(json_dict, TTOLQUEUE_URL)
     debug_prints(transformed_dict)
     return transformed_dict
 
+
+def get_dict_from_queue(event):
+    return event["Records"][0]["body"]
 
 
 def transform(dict_):
@@ -56,6 +61,7 @@ def transform(dict_):
     transformed_dict["card_number"] = card_num_format(dict_["card_number"])
 
     return transformed_dict
+
 
 def json_serialize_dict(dict_):
     json_dict = json.dumps(dict_)
@@ -80,6 +86,7 @@ def send_json_to_queue(json_dict, queue_url):
     )
 
     print(response['MessageId'])
+
 
 ################## TRANSFORM SECTION ###################
 def clean_datetimes(raw_list):
@@ -223,9 +230,11 @@ def transform_purchases(purchases):
  
     return list_of_dicts
 
+
 def clean_total_prices(raw_list):
     cleaned_total_prices = [int(price.replace(".","")) for price in raw_list]
     return cleaned_total_prices
+
 
 def card_num_format(card_num_list):
     starred_numbers = []
@@ -238,8 +247,6 @@ def card_num_format(card_num_list):
             starred_numbers.append(None) #adds None as card number value if valid card number is not present
 
     return starred_numbers
-
-
 
 
 def debug_prints(dict_):
