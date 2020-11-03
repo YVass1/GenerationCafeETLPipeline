@@ -11,7 +11,7 @@ def start(event, context):
 
     load_dotenv()
     BUCKET_NAME = os.getenv("BUCKET_NAME")
-    QUEUE_NAME = os.getenv("QUEUE_NAME")
+    QUEUE_URL = os.getenv("QUEUE_URL")
     
     logging.getLogger().setLevel(0)
     
@@ -22,7 +22,7 @@ def start(event, context):
 
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
     json_dict = json_serialize_dict(extracted_dict)
-    send_json_to_queue(json_dict, QUEUE_NAME)
+    send_json_to_queue(json_dict, QUEUE_URL)
 
     debug_prints(extracted_dict)
     return extracted_dict
@@ -41,12 +41,12 @@ def json_serialize_dict(dict_):
     return json_dict
 
 
-def send_json_to_queue(json_dict, queue_name):
+def send_json_to_queue(json_dict, queue_url):
     sqs = boto3.client('sqs')
 
     # Send message to SQS queue
     response = sqs.send_message(
-        QueueUrl = queue_name,
+        QueueUrl = queue_url,
         DelaySeconds = 1,
         MessageAttributes = {
             'TestAttribute': {
@@ -165,21 +165,8 @@ def debug_prints(dict_):
     print("Card Numbers of first 10 orders:")
     print(dict_["card_number"][:10])
 
-    print("FIRST 10 PURCHASE INFOS")
-    for purchase in dict_["purchase"][:10]:
-        print("INFO:")
-
-        print("Drink Sizes:")
-        print(purchase["drink_size"])
-
-        print("Drink Names:")
-        print(purchase["drink_type"])
-
-        print("Drink Flavours:")
-        print(purchase["drink_flavour"])
-
-        print("Drink Price:")
-        print(purchase["drink_price"])
+    print("Purchases of first 10 orders:")
+    print(dict_["purchase"][:10])
 
     print()
     print("To check invalid card numbers are correctly set to None, the following two numbers should be equal:")
