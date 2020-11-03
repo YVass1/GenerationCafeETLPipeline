@@ -7,6 +7,8 @@ provider:
   stage: dev
   region: eu-west-1
   role: arn:aws:iam::670948818876:role/ServerlessResourcesRole
+  environment:
+    TEST_QUEUE_URL: { Ref: TeamOneTestQueue }
 
 package:
   individually: true
