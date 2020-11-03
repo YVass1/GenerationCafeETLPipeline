@@ -120,11 +120,8 @@ def debug_prints(dict_):
     print("Locations of first 10 orders:")
     print(dict_["location"][:10])
 
-    print("First Names of first 10 orders:")
-    print(dict_["fname"][:10])
-
-    print("Last Names of first 10 orders:")
-    print(dict_["lname"][:10])
+    print("Names of first 10 orders:")
+    print(dict_["customer_name"][:10])
 
     print("Total Prices of first 10 orders:")
     print(dict_["total_price"][:10])
