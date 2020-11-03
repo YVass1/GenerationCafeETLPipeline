@@ -13,7 +13,7 @@ package:
 
 resources:
   Resources:
-    team-1-test-queue:
+    team1testqueue:
       Type: "AWS::SQS::Queue"
       Properties:
         MessageRetenionPeriod: 1209600
