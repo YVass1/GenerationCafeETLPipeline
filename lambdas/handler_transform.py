@@ -1,18 +1,13 @@
 import psycopg2
-import sys
-import os
 import csv
-import boto3
 import logging
 import datetime 
-from dotenv import load_dotenv
 import re
 import redshift_lambda.handler_extract as extract
 
 def start(event, context):
     print("Team One Pipeline")
 
-    load_dotenv()
     logging.getLogger().setLevel(0)
 
     extracted_dict = extract.start() # is this the right way of grabbing the extracted dicts?
@@ -29,8 +24,6 @@ def transform(dict_):
     transformed_dict["total_price"] = clean_total_prices(dict_["total_price"])
     transformed_dict["payment_method"] = dict_["payment_method"]
     transformed_dict["card_number"] = card_num_format(dict_["card_number"])
-
-    debug_prints(transformed_dict)
 
     return transformed_dict
 

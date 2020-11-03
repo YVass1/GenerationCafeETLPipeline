@@ -16,7 +16,7 @@ resources:
     team1testqueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        MessageRetenionPeriod: 1209600
+        MessageRetentionPeriod: 1209600
         QueueName: TeamOneTestQueue
 
 functions:
