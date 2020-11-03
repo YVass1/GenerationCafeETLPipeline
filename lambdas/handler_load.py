@@ -6,8 +6,6 @@ import boto3
 import logging
 import datetime 
 from dotenv import load_dotenv
-import lambdas.handler_extract as extract
-import lambdas.handler_transform as transform
 
 def start(event, context):
     print("Team One Pipeline")
@@ -21,8 +19,8 @@ def start(event, context):
     logging.getLogger().setLevel(0)
 
     conn = redshift_connect()
-    transformed_dict = transform.start()
-    load(transformed_dict, conn, sql_code)
+    # transformed_dict = transform.start()
+    # load(transformed_dict, conn, sql_code)
 
 def redshift_connect():
     host = os.getenv("DB_HOST")
