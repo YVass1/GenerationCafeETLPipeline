@@ -1,8 +1,8 @@
 import psycopg2
-import sys
-import os
+from dotenv import load_dotenv
 import csv
 import boto3
+import logging
 
 def start(event, context):
     print("Team One Pipeline")
