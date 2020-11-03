@@ -11,7 +11,7 @@ def start(event, context):
 
     load_dotenv()
     BUCKET_NAME = os.getenv("BUCKET_NAME")
-    QUEUE_NAME = os.getenv("QUEUE_NAME")
+    QUEUE_NAME = os.getenv("TEST_QUEUE_URL")
     
     logging.getLogger().setLevel(0)
     
