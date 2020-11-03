@@ -11,7 +11,7 @@ def start(event, context):
 
     load_dotenv()
     BUCKET_NAME = os.getenv("BUCKET_NAME")
-    QUEUE_NAME = os.getenv("QUEUE_NAME")
+    QUEUE_URL = os.getenv("QUEUE_URL")
     
     logging.getLogger().setLevel(0)
     
@@ -22,7 +22,7 @@ def start(event, context):
 
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
     json_dict = json_serialize_dict(extracted_dict)
-    send_json_to_queue(json_dict, QUEUE_NAME)
+    send_json_to_queue(json_dict, QUEUE_URL)
 
     debug_prints(extracted_dict)
     return extracted_dict
@@ -41,9 +41,8 @@ def json_serialize_dict(dict_):
     return json_dict
 
 
-def send_json_to_queue(json_dict, queue_name):
+def send_json_to_queue(json_dict, queue_url):
     sqs = boto3.client('sqs')
-    queue_url = sqs.get_queue_url(QueueName = queue_name)
 
     # Send message to SQS queue
     response = sqs.send_message(
