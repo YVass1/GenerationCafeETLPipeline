@@ -11,7 +11,7 @@ def start(event, context):
 
     load_dotenv()
     BUCKET_NAME = os.getenv("BUCKET_NAME")
-    QUEUE_URL = os.getenv("QUEUE_URL")
+    ETOTQUEUE_URL = os.getenv("ETOTQUEUE_URL")
     
     logging.getLogger().setLevel(0)
     
@@ -22,7 +22,7 @@ def start(event, context):
 
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
     json_dict = json_serialize_dict(extracted_dict)
-    send_json_to_queue(json_dict, QUEUE_URL)
+    send_json_to_queue(json_dict, ETOTQUEUE_URL)
 
     debug_prints(extracted_dict)
     return extracted_dict
