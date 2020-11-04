@@ -2,6 +2,7 @@ import psycopg2
 import sys
 import os
 import csv
+import json
 import boto3
 import logging
 import datetime 
@@ -17,11 +18,24 @@ def start(event, context):
     # sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
 
     load_dotenv()
+    conn = redshift_connect()
     logging.getLogger().setLevel(0)
 
-    conn = redshift_connect()
-    # transformed_dict = transform.start()
-    # load(transformed_dict, conn, sql_code)
+    transformed_json = get_json_from_queue(event)
+    transformed_dict = convert_json_to_dict(transformed_json)
+
+    sql_code = SQL_TEXTFILE_KEY_NAME #temporary line to avoid error, sql code may be removed soon
+    load(transformed_dict, conn, sql_code)
+    
+
+def get_json_from_queue(event):
+    return event["Records"][0]["body"]
+
+
+def convert_json_to_dict(json_to_convert):
+    generated_dict = json.loads(json_to_convert)
+    print(generated_dict)
+    return generated_dict
 
 
 def redshift_connect():
