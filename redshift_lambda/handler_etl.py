@@ -552,13 +552,22 @@ def insert_data_into_customer_table(data,connection):
         customer_names = reformat_customer_info_for_sql(data)
         print("Grabbing reformatted customer info")
         print(customer_names)
+        customer_ids_list = []
         
         #inserting data into customer table
         print("Inserting customer info data into table")
         sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
-        cursor.executemany(sql_command_insert_data_into_table, customer_names)
-        connection.commit()
+        for name in customer_names:
+            cursor.execute(sql_command_insert_data_into_table, name)
+            connection.commit()
+            sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
+            cursor.execute(sql_command_select_customer_id, name)
+            customer_id = cursor.fetchone()[0]
+            customer_ids_list.append(customer_id)
+        
         cursor.close()
+
+        data["Customer_id"] = customer_ids_list
 
 def insert_data_cafe_locations_table(data, connection):
     print("insert_data_into_customer_table")
@@ -627,29 +636,15 @@ def insert_data_into_payments_table(data,connection):
         total_prices, payment_methods, card_numbers = reformat_payment_info_for_sql(data)
         print("Grabbing payment info")
 
-        #Reformatted customer info 
-        customer_names= reformat_customer_info_for_sql(data)
-        print("Grabbing customer info")
+        #Reformatted customer ids info 
+        customer_ids_list = data["Customer_id"]
+        print("Grabbing customer_ids_list info")
 
         #inserting data into payments table
-        #selecting corresponding customer ids
-        print("selecting corresponding customer ids")
-
-        for name in customer_names:
-            cursor.execute('SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s', name)
-            connection.commit()
-            
-            #Extracts each row's customer_id but in tuple form: (customer_id, )
-            print("Extracts each row's customer_id from (customer_id, )") 
-            customer_id = cursor.fetchone()[0]
-
-            #Appending each customer_id to customer_ids list
-            print("Appending each customer_id to customer_ids") 
-            customer_ids.append(customer_id)
 
         #reformatting data --> each customer_id with customer's payment info in a tuple
         print("reformatting data --> each customer_id with customer's payment info in a tuple") 
-        payments_info = list(zip(customer_ids, total_prices, payment_methods, card_numbers))
+        payments_info = list(zip(customer_ids_list, total_prices, payment_methods, card_numbers))
         
         #inserting payment info data into payments table
         print("inserting payment info data into payments table") 
@@ -761,12 +756,12 @@ def insert_data_into_orders_table(data, connection):
         #Tier 3
 
         #Reformatted name/times/purchases info 
-        customer_names = reformat_customer_info_for_sql(data)
+        customer_ids_list = data["Customer_id"]
         datetimes, days, unique_days, months, unique_months, years,unique_years =  reformat_datetime_info_for_sql(data)
         unique_items, all_purchases, all_items = reformat_purchases_for_sql(data)
         total_prices, payment_methods, card_numbers = reformat_payment_info_for_sql(data)
 
-        print("Grabbing name/times/purchases info")
+        print("Grabbing customer_ids/times/purchases info")
 
         #Orders table
 
@@ -780,12 +775,12 @@ def insert_data_into_orders_table(data, connection):
             time_id = cursor.fetchone()[0]
             time_ids.append(time_id)
 
-        #Looping through customer_names list
-        #Selecting payment_id connected to a customer_id which is connected to customer name
+        #Looping through customer_ids list
+        #Selecting payment_id connected to a customer_id
         print("Selecting payment_id connected to a customer_id which is connected to customer name")
         payment_ids = []
-        for name in customer_names:
-            cursor.execute("""select p.Payment_id from Payments AS p join Customers AS c ON c.Customer_id = p.Customer_id WHERE c.forename = %s and c.surname = %s; """, name)
+        for customer_id in customer_ids_list:
+            cursor.execute("""SELECT p.Payment_id FROM Payments AS p WHERE p.Customer_id = %s; """, (customer_id, ))
             connection.commit()
             payment_id = cursor.fetchone()[0]
             payment_ids.append(payment_id)
