@@ -27,7 +27,7 @@ def get_json_from_queue(event):
 
 
 def convert_json_to_dict(json_to_convert):
-    generated_dict = json.load(json_to_convert)
+    generated_dict = json.loads(json_to_convert)
     print(generated_dict)
     return generated_dict
 
