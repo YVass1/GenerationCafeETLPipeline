@@ -66,6 +66,12 @@ functions:
       DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
       DB_NAME: team1db
       DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - team1TtoLqueue
+              - Arn
   redshift-lambda:
     runtime: python3.8
     handler: handler_etl.start

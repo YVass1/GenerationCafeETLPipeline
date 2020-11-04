@@ -8,36 +8,13 @@ import os
 def start(event, context):
     print("Team One Pipeline")
 
-    # dummy_extracted_dict = {
-    # "datetime": [
-    #     "11/10/2020 08:11"
-    # ],
-    # "location": [
-    #     "Sandford"
-    # ],
-    # "customer_name": [
-    #     "Sergeant Angel"
-    # ],
-    # "purchase": [
-    #     "Regular Cornetto - Classic - 2.55"
-    # ],
-    # "total_price": [
-    #     "2.55"
-    # ],
-    # "payment_method": [
-    #     "CARD"
-    # ],
-    # "card_number": [
-    #     "5359353452571234"
-    # ]
-    # }
-
     load_dotenv()
     logging.getLogger().setLevel(0)
 
     TTOLQUEUE_URL = os.getenv("TTOLQUEUE_URL")
 
-    extracted_dict = get_dict_from_queue(event)
+    extracted_json = get_json_from_queue(event)
+    extracted_dict = convert_json_to_dict(extracted_json)
     transformed_dict = transform(extracted_dict)
     json_dict = json_serialize_dict(transformed_dict)
     send_json_to_queue(json_dict, TTOLQUEUE_URL)
@@ -45,8 +22,14 @@ def start(event, context):
     return transformed_dict
 
 
-def get_dict_from_queue(event):
+def get_json_from_queue(event):
     return event["Records"][0]["body"]
+
+
+def convert_json_to_dict(json_to_convert):
+    generated_dict = json.load(json_to_convert)
+    print(generated_dict)
+    return generated_dict
 
 
 def transform(dict_):
