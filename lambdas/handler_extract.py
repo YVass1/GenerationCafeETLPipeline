@@ -1,15 +1,18 @@
 import psycopg2
-import sys
-import os
+from dotenv import load_dotenv
 import csv
+import os
 import boto3
+import json
+import logging
 
 def start(event, context):
     print("Team One Pipeline")
 
-    BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-
     load_dotenv()
+    BUCKET_NAME = os.getenv("BUCKET_NAME")
+    ETOTQUEUE_URL = os.getenv("ETOTQUEUE_URL")
+    
     logging.getLogger().setLevel(0)
     
     file_to_extract = get_key_to_extract(event)
@@ -18,13 +21,42 @@ def start(event, context):
         return None
 
     extracted_dict = extract(BUCKET_NAME, file_to_extract)
+    json_dict = json_serialize_dict(extracted_dict)
+    send_json_to_queue(json_dict, ETOTQUEUE_URL)
+
+    debug_prints(extracted_dict)
     return extracted_dict
 
-def get_key_to_extract(event):
 
-    key_to_extract = event["Records"][0]["object"]["key"]
-        
-    return key_to_extract
+def get_key_to_extract(event):
+    #TODO: not necessarily a 0-index, foreach instead
+    return event["Records"][0]["s3"]["object"]["key"]
+
+
+def json_serialize_dict(dict_):
+    json_dict = json.dumps(dict_)
+
+    return json_dict
+
+
+def send_json_to_queue(json_dict, queue_url):
+    sqs = boto3.client('sqs')
+
+    # Send message to SQS queue
+    response = sqs.send_message(
+        QueueUrl = queue_url,
+        DelaySeconds = 1,
+        MessageAttributes = {
+            'TestAttribute': {
+                'DataType': 'String',
+                'StringValue': 'Hello World'
+            },
+        },
+        MessageBody = json_dict
+    )
+
+    print(response['MessageId'])
+
 
 def extract(bucket_name, cafe_csv_key_name):
     raw_data = read_from_s3(bucket_name, cafe_csv_key_name)
@@ -35,6 +67,7 @@ def extract(bucket_name, cafe_csv_key_name):
     
     dict_ = generate_dictionary(combined_purchase_orders)
     return dict_
+
 
 def read_from_s3(bucket, cafe_csv_key):
     s3 = boto3.client('s3')
@@ -118,11 +151,8 @@ def debug_prints(dict_):
     print("Locations of first 10 orders:")
     print(dict_["location"][:10])
 
-    print("First Names of first 10 orders:")
-    print(dict_["fname"][:10])
-
-    print("Last Names of first 10 orders:")
-    print(dict_["lname"][:10])
+    print("Names of first 10 orders:")
+    print(dict_["customer_name"][:10])
 
     print("Total Prices of first 10 orders:")
     print(dict_["total_price"][:10])
@@ -133,21 +163,8 @@ def debug_prints(dict_):
     print("Card Numbers of first 10 orders:")
     print(dict_["card_number"][:10])
 
-    print("FIRST 10 PURCHASE INFOS")
-    for purchase in dict_["purchase"][:10]:
-        print("INFO:")
-
-        print("Drink Sizes:")
-        print(purchase["drink_size"])
-
-        print("Drink Names:")
-        print(purchase["drink_type"])
-
-        print("Drink Flavours:")
-        print(purchase["drink_flavour"])
-
-        print("Drink Price:")
-        print(purchase["drink_price"])
+    print("Purchases of first 10 orders:")
+    print(dict_["purchase"][:10])
 
     print()
     print("To check invalid card numbers are correctly set to None, the following two numbers should be equal:")

@@ -6,8 +6,7 @@ import boto3
 import logging
 import datetime 
 from dotenv import load_dotenv
-import redshift_lambda.handler_extract as extract
-import redshift_lambda.handler_transform as transform
+
 
 def start(event, context):
     print("Team One Pipeline")
@@ -15,14 +14,15 @@ def start(event, context):
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
     SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
 
-    sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
+    # sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
 
     load_dotenv()
     logging.getLogger().setLevel(0)
 
     conn = redshift_connect()
-    transformed_dict = transform.start()
-    load(transformed_dict, conn, sql_code)
+    # transformed_dict = transform.start()
+    # load(transformed_dict, conn, sql_code)
+
 
 def redshift_connect():
     host = os.getenv("DB_HOST")
@@ -63,18 +63,18 @@ def redshift_connect():
     print('connected')
     return conn
 
-def read_from_s3(bucket, sql_txtfile_key):
-    s3 = boto3.client('s3')
+# def read_from_s3(bucket, sql_txtfile_key):
+#     s3 = boto3.client('s3')
 
-    s3_sql_code = s3.get_object(Bucket = bucket, Key = sql_txtfile_key)
+#     s3_sql_code = s3.get_object(Bucket = bucket, Key = sql_txtfile_key)
 
-    sql_code = s3_sql_code['Body'].read().decode('utf-8')
+#     sql_code = s3_sql_code['Body'].read().decode('utf-8')
 
-    return (sql_code)
+#     return (sql_code)
 
 def load(cleaned_data, connection, sql_code_txtfile):
     
-    create_database_tables(sql_code_txtfile, connection)
+    # create_database_tables(sql_code_txtfile, connection)
 
     insert_data_into_tables(cleaned_data, connection)
 
@@ -82,31 +82,31 @@ def load(cleaned_data, connection, sql_code_txtfile):
 
 ################## LOAD SECTION ################
 
-def create_database_tables(sql_code_string, connection):
-    """Arguments: filepath, database name. Programmatically populates specified database
-     with tables using file containing SQL commands."""
+# def create_database_tables(sql_code_string, connection):
+#     """Arguments: filepath, database name. Programmatically populates specified database
+#      with tables using file containing SQL commands."""
 
-    try:
-        #Reformatting string to remove line breaks and tabs
-        #re is an imported module for formatting
-        reformatted_sql_string = re.sub(r"[\n\t]*", "", sql_code_string).strip()
+#     try:
+#         #Reformatting string to remove line breaks and tabs
+#         #re is an imported module for formatting
+#         reformatted_sql_string = re.sub(r"[\n\t]*", "", sql_code_string).strip()
         
-        #creating list of strings each contaning SQL statement
-        sql_string_list = reformatted_sql_string.split(";")
+#         #creating list of strings each contaning SQL statement
+#         sql_string_list = reformatted_sql_string.split(";")
         
-        #Executing each SQL statement 
-        with connection.cursor() as cursor:
-            for sql_command in sql_string_list:
-                if type(sql_command) == str:
-                    if sql_command.isspace() == False and len(sql_command) > 0:
-                        print(sql_command)
-                        cursor.execute(sql_command)
-                        connection.commit()
-            cursor.close()
+#         #Executing each SQL statement 
+#         with connection.cursor() as cursor:
+#             for sql_command in sql_string_list:
+#                 if type(sql_command) == str:
+#                     if sql_command.isspace() == False and len(sql_command) > 0:
+#                         print(sql_command)
+#                         cursor.execute(sql_command)
+#                         connection.commit()
+#             cursor.close()
 
-    except Exception as e:
-        print("Executing empty string")
-        print(f"Exception Error: {e}")
+#     except Exception as e:
+#         print("Executing empty string")
+#         print(f"Exception Error: {e}")
 
 
 #Function to convert any Python None values in the data to NULL (SQL only recognises NULL)

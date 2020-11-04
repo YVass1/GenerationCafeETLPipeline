@@ -1,13 +1,9 @@
 import psycopg2
-import sys
-import os
-import csv
-import boto3
 import logging
-import datetime 
+import json
+import boto3
 from dotenv import load_dotenv
-import re
-import redshift_lambda.handler_extract as extract
+import os
 
 def start(event, context):
     print("Team One Pipeline")
@@ -15,9 +11,26 @@ def start(event, context):
     load_dotenv()
     logging.getLogger().setLevel(0)
 
-    extracted_dict = extract.start() # is this the right way of grabbing the extracted dicts?
+    TTOLQUEUE_URL = os.getenv("TTOLQUEUE_URL")
+
+    extracted_json = get_json_from_queue(event)
+    extracted_dict = convert_json_to_dict(extracted_json)
     transformed_dict = transform(extracted_dict)
+    json_dict = json_serialize_dict(transformed_dict)
+    send_json_to_queue(json_dict, TTOLQUEUE_URL)
+    debug_prints(transformed_dict)
     return transformed_dict
+
+
+def get_json_from_queue(event):
+    return event["Records"][0]["body"]
+
+
+def convert_json_to_dict(json_to_convert):
+    generated_dict = json.loads(json_to_convert)
+    print(generated_dict)
+    return generated_dict
+
 
 def transform(dict_):
     transformed_dict = {}
@@ -30,9 +43,33 @@ def transform(dict_):
     transformed_dict["payment_method"] = dict_["payment_method"]
     transformed_dict["card_number"] = card_num_format(dict_["card_number"])
 
-    debug_prints(transformed_dict)
-
     return transformed_dict
+
+
+def json_serialize_dict(dict_):
+    json_dict = json.dumps(dict_)
+
+    return json_dict
+
+
+def send_json_to_queue(json_dict, queue_url):
+    sqs = boto3.client('sqs')
+
+    # Send message to SQS queue
+    response = sqs.send_message(
+        QueueUrl = queue_url,
+        DelaySeconds = 1,
+        MessageAttributes = {
+            'TestAttribute': {
+                'DataType': 'String',
+                'StringValue': 'Hello World'
+            },
+        },
+        MessageBody = json_dict
+    )
+
+    print(response['MessageId'])
+
 
 ################## TRANSFORM SECTION ###################
 def clean_datetimes(raw_list):
@@ -176,9 +213,11 @@ def transform_purchases(purchases):
  
     return list_of_dicts
 
+
 def clean_total_prices(raw_list):
     cleaned_total_prices = [int(price.replace(".","")) for price in raw_list]
     return cleaned_total_prices
+
 
 def card_num_format(card_num_list):
     starred_numbers = []
@@ -191,3 +230,47 @@ def card_num_format(card_num_list):
             starred_numbers.append(None) #adds None as card number value if valid card number is not present
 
     return starred_numbers
+
+
+def debug_prints(dict_):
+    print("Dates of first 10 orders:")
+    print(dict_["datetime"][:10])
+
+    print("Locations of first 10 orders:")
+    print(dict_["location"][:10])
+
+    print("First Names of first 10 orders:")
+    print(dict_["fname"][:10])
+
+    print("Last Names of first 10 orders:")
+    print(dict_["lname"][:10])
+
+    print("Total Prices of first 10 orders:")
+    print(dict_["total_price"][:10])
+
+    print("Payment Methods of first 10 orders:")
+    print(dict_["payment_method"][:10])
+
+    print("Card Numbers of first 10 orders:")
+    print(dict_["card_number"][:10])
+
+    print("FIRST 10 PURCHASE INFOS")
+    for purchase in dict_["purchase"][:10]:
+        print("INFO:")
+
+        print("Drink Sizes:")
+        print(purchase["drink_size"])
+
+        print("Drink Names:")
+        print(purchase["drink_type"])
+
+        print("Drink Flavours:")
+        print(purchase["drink_flavour"])
+
+        print("Drink Price:")
+        print(purchase["drink_price"])
+
+    print()
+    print("To check invalid card numbers are correctly set to None, the following two numbers should be equal:")
+    print("total locations: " + str(len(dict_["location"])))
+    print("total card nunmbers: " + str(len(dict_["card_number"])))

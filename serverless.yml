@@ -11,11 +11,50 @@ provider:
 package:
   individually: true
 
+resources:
+  Resources:
+    team1EtoTqueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1EtoTqueue
+    team1TtoLqueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1TtoLqueue
+
 functions:
-  redshift-lambda:
+  handler-extract:
     runtime: python3.8
-    handler: handler_etl.start
-    module: redshift_lambda
+    handler: handler_extract.start
+    module: lambdas
+    events:
+      - s3:
+          bucket: cafe-data-data-pump-dev-team-1
+          event: s3:ObjectCreated:Put
+          rules:
+            - suffix: .csv
+          existing: true
+    environment:
+      ETOTQUEUE_URL: !Ref team1EtoTqueue
+      BUCKET_NAME: cafe-data-data-pump-dev-team-1
+  handler-transform:
+    runtime: python3.8
+    handler: handler_transform.start
+    module: lambdas
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - team1EtoTqueue
+              - Arn
+    environment:
+      TTOLQUEUE_URL: !Ref team1TtoLqueue
+  handler-load:
+    runtime: python3.8
+    handler: handler_load.start
+    module: lambdas
     vpc:
       securityGroupIds:
         - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
@@ -28,9 +67,23 @@ functions:
       DB_NAME: team1db
       DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
     events:
-      - s3:
-          bucket: cafe-data-data-pump-dev-team-1
-          event: s3:ObjectCreated:*
-          rules:
-            - suffix: .csv
-          existing: true 
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - team1TtoLqueue
+              - Arn
+  redshift-lambda:
+    runtime: python3.8
+    handler: handler_etl.start
+    module: lambdas
+    vpc:
+      securityGroupIds:
+        - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
+      subnetIds:
+        - !ImportValue RedshiftAndVPC-VPCPrivateSubnet
+    environment:
+      DB_HOST: !ImportValue RedshiftAndVPC-ClusterAddress
+      DB_USER: team1
+      DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
+      DB_NAME: team1db
+      DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
