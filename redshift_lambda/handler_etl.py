@@ -502,12 +502,19 @@ def reformat_cafe_locations_info_for_sql(data):
     
     return unique_locations
 
-def reformat_datetime_info_for_sql(data):
+def reformat_datetime_info_for_sql(data, data_type ):
     """Extracts datetime info from input dictionary and reformats into a required format for MySQL statements."""
     print("reformatting_datetimes_data_for_sql")
     datetimes = data["datetime"]
     days, unique_days, months, unique_months, years, unique_years = corresponding_unique_days_months_years(datetimes)
-    return datetimes, days, unique_days, months, unique_months, years,unique_years
+    
+    if data_type == "UNIQUE" :
+        return unique_days, unique_months, unique_years
+    elif data_type == "NON-UNIQUE" :
+       return days, months, years
+    else:
+        return datetimes, days, unique_days, months, unique_months, years,unique_years
+
 
 def reformat_payment_info_for_sql(data):
     """Extracts payment info from input dictionary and reformats into a required format for MySQL statements."""
@@ -519,9 +526,9 @@ def reformat_payment_info_for_sql(data):
 
     return total_prices, payment_methods, card_numbers
 
-def reformat_purchases_info_for_sql(data):
-    """Extracts purchases info from input dictionary and reformats into a required format for MySQL statements."""
-    print("reformatting_purchases_data_for_sql")
+def reformat_purchases_info_for_sql(data, data_type = "ALL"):
+    """Reformats purchases info from input dictionary and reformats into a required format for MySQL statements."""
+    print("reformat_purchases_info_for_sql")
     
     #For each dictionary in purchase list, joining location with drink ordered and drink info
     all_purchases = [list(zip(data["location"],purchase["drink_price"], purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"])) for purchase in data["purchase"]] 
@@ -535,7 +542,14 @@ def reformat_purchases_info_for_sql(data):
     #all_items_for_duplicate_check = list(zip(all_items,all_items))
     unique_items = list(set(all_items))
 
-    return unique_items, all_purchases, all_items
+    if data_type == "ALL_PURCHASES":
+        return all_purchases
+    elif data_type == "ALL_ITEMS":
+        return all_items
+    elif data_type == "UNIQUE_ITEMS":
+        return unique_items
+    else:
+        return unique_items, all_purchases, all_items
 
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
@@ -583,7 +597,7 @@ def insert_data_cafe_locations_table(data, connection):
         print(unique_locations)
         print("Grabbing reformatted cafe locations data")
 
-        print("inserting data into cafe location table")
+        print("Inserting data into cafe locations table")
         #inserting data into cafes locations table
         
         #Ongoing work for duplicates
@@ -606,7 +620,7 @@ def insert_data_into_day_month_year_tables(data, connection):
         #Tier 1
 
         #reformatted data suitable for MySQL statements
-        datetimes, days, unique_days, months, unique_months, years,unique_years = reformat_datetime_info_for_sql(data)
+        unique_days, unique_months, unique_years = reformat_datetime_info_for_sql(data, "UNIQUE")
         print(datetimes)
         print("Grabbing reformatted day;month;year data")
 
@@ -663,7 +677,8 @@ def insert_data_into_full_datetime_table(data,connection):
         #Tier 2
 
         #Reformatted datetime data
-        datetimes, days, unique_days, months, unique_months, years,unique_years =  reformat_datetime_info_for_sql(data)
+        datetimes = data["datatime"]
+        days, months, years =  reformat_datetime_info_for_sql(data, "NON-UNIQUE")
         print("Successfully grabbed datetimes data")
 
         #Inserting data into table Time
@@ -734,7 +749,7 @@ def insert_data_into_items_table(data,connection):
         #Tier 2
 
         #Reformatted payment info 
-        unique_items, all_purchases, all_items = reformat_purchases_for_sql(data)
+        unique_items = reformat_purchases_info_for_sql(data, "UNIQUE_ITEMS")
         print("Grabbing purchases/items info")
 
         #Items table
@@ -757,9 +772,8 @@ def insert_data_into_orders_table(data, connection):
 
         #Reformatted name/times/purchases info 
         customer_ids_list = data["Customer_id"]
-        datetimes, days, unique_days, months, unique_months, years,unique_years =  reformat_datetime_info_for_sql(data)
-        unique_items, all_purchases, all_items = reformat_purchases_for_sql(data)
-        total_prices, payment_methods, card_numbers = reformat_payment_info_for_sql(data)
+        datetimes =  data["datetime"]
+        all_purchases = reformat_purchases_info_for_sql(data, "ALL_PURCHASES")
 
         print("Grabbing customer_ids/times/purchases info")
 
