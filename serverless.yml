@@ -13,11 +13,16 @@ package:
 
 resources:
   Resources:
-    team1testqueue:
+    team1EtoTqueue:
       Type: "AWS::SQS::Queue"
       Properties:
         MessageRetentionPeriod: 1209600
-        QueueName: TeamOneTestQueue
+        QueueName: Team1EtoTqueue
+    team1TtoLqueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1TtoLqueue
 
 functions:
   handler-extract:
@@ -32,12 +37,20 @@ functions:
             - suffix: .csv
           existing: true
     environment:
-      QUEUE_URL: !Ref team1testqueue
+      ETOTQUEUE_URL: !Ref team1EtoTqueue
       BUCKET_NAME: cafe-data-data-pump-dev-team-1
   handler-transform:
     runtime: python3.8
     handler: handler_transform.start
     module: lambdas
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - team1EtoTqueue
+              - Arn
+    environment:
+      TTOLQUEUE_URL: !Ref team1TtoLqueue
   handler-load:
     runtime: python3.8
     handler: handler_load.start
@@ -53,6 +66,12 @@ functions:
       DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
       DB_NAME: team1db
       DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - team1TtoLqueue
+              - Arn
   redshift-lambda:
     runtime: python3.8
     handler: handler_etl.start
