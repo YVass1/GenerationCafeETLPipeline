@@ -275,11 +275,18 @@ def insert_data_into_customer_table(data,connection):
         #inserting data into customer table
         print("Inserting customer info data into table")
         sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
+
         for name in customer_names:
+            print("executing name addition")
             cursor.execute(sql_command_insert_data_into_table, name)
             connection.commit()
+
+            print("finding max id")
             sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Customer_id = (SELECT MAX(k.Customer_id) FROM Customers AS k)'
             cursor.execute(sql_command_select_customer_id)
+            connection.commit()
+
+            print("fetching max id from query")
             customer_id = cursor.fetchone()[0]
             customer_ids_list.append(customer_id)
         
@@ -600,5 +607,8 @@ def insert_data_into_all_tables(data, connection):
         insert_data_into_full_datetime_table(data, connection)
         insert_data_into_items_table(data,connection)
         insert_data_into_orders_table(data,connection)
+    except Exception as e:
+        print("insert_data_into_all_tables failure")
+        print(e)
     finally:
         connection.close()
