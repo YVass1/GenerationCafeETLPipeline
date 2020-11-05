@@ -570,7 +570,7 @@ def insert_data_into_customer_table(data,connection):
         data["Customer_id"] = customer_ids_list
 
 def insert_data_cafe_locations_table(data, connection):
-    print("insert_data_into_customer_table")
+    print("insert_data_into_cafe_locations_table")
     """Inserts data into cafe locations table"""
 
     with connection.cursor() as cursor:
