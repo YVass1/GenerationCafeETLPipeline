@@ -502,19 +502,18 @@ def reformat_cafe_locations_info_for_sql(data):
     
     return unique_locations
 
-def reformat_datetime_info_for_sql(data, data_type ):
+def reformat_datetime_info_for_sql(data, return_type = "ALL" ):
     """Extracts datetime info from input dictionary and reformats into a required format for MySQL statements."""
     print("reformatting_datetimes_data_for_sql")
     datetimes = data["datetime"]
     days, unique_days, months, unique_months, years, unique_years = corresponding_unique_days_months_years(datetimes)
     
-    if data_type == "UNIQUE" :
+    if return_type == "UNIQUE":
         return unique_days, unique_months, unique_years
-    elif data_type == "NON-UNIQUE" :
+    elif return_type == "NON-UNIQUE":
        return days, months, years
     else:
         return datetimes, days, unique_days, months, unique_months, years,unique_years
-
 
 def reformat_payment_info_for_sql(data):
     """Extracts payment info from input dictionary and reformats into a required format for MySQL statements."""
@@ -526,7 +525,7 @@ def reformat_payment_info_for_sql(data):
 
     return total_prices, payment_methods, card_numbers
 
-def reformat_purchases_info_for_sql(data, data_type = "ALL"):
+def reformat_purchases_info_for_sql(data, return_type = "ALL"):
     """Reformats purchases info from input dictionary and reformats into a required format for MySQL statements."""
     print("reformat_purchases_info_for_sql")
     
@@ -542,11 +541,11 @@ def reformat_purchases_info_for_sql(data, data_type = "ALL"):
     #all_items_for_duplicate_check = list(zip(all_items,all_items))
     unique_items = list(set(all_items))
 
-    if data_type == "ALL_PURCHASES":
+    if return_type == "ALL_PURCHASES":
         return all_purchases
-    elif data_type == "ALL_ITEMS":
+    elif return_type == "ALL_ITEMS":
         return all_items
-    elif data_type == "UNIQUE_ITEMS":
+    elif return_type == "UNIQUE_ITEMS":
         return unique_items
     else:
         return unique_items, all_purchases, all_items
