@@ -72,18 +72,4 @@ functions:
             Fn::GetAtt:
               - team1TtoLqueue
               - Arn
-  redshift-lambda:
-    runtime: python3.8
-    handler: handler_etl.start
-    module: lambdas
-    vpc:
-      securityGroupIds:
-        - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
-      subnetIds:
-        - !ImportValue RedshiftAndVPC-VPCPrivateSubnet
-    environment:
-      DB_HOST: !ImportValue RedshiftAndVPC-ClusterAddress
-      DB_USER: team1
-      DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
-      DB_NAME: team1db
-      DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
+  

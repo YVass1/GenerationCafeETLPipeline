@@ -15,12 +15,12 @@ def start(event, context):
     print("Team One Pipeline")
 
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
+    SQL_TEXTFILE_KEY_NAME = "create_table_sql_code.txt"
 
     load_dotenv()
     logging.getLogger().setLevel(0)
     
-    file_to_extract = get_key_to_extract(event, BUCKET_NAME)
+    file_to_extract = get_key_to_extract(event)
 
     if file_to_extract == None:
         return None
@@ -32,34 +32,14 @@ def start(event, context):
     return transformed_dict
 
 
-def get_key_to_extract(event, bucket_name):
-    keys = get_all_bucket_keys(bucket_name)
+def get_key_to_extract(event):
 
-    if event["is_using_current_date"] == "True":
-        key_to_extract = get_todays_key(keys)
-    else:
-        key_to_extract = keys[0]
+    key_to_extract = event["Records"][0]["object"]["key"]
         
     return key_to_extract
 
 
-def get_todays_key(keys):
-    raw_date_today = str(datetime.date.today())
-    split_date_today = raw_date_today.split("-")
-    date_today_correct_order = split_date_today[2] + "-" + split_date_today[1] + "-" + split_date_today[0]
-    
-    return_key = None
-    
-    for key in keys:
-        key_date = key.split("_")[-2]
-        
-        if key_date == date_today_correct_order:
-            return_key = key
-            break
-    
-    return return_key
 
-  
 def redshift_connect():
     host = os.getenv("DB_HOST")
     port = int(os.getenv("DB_PORT"))
@@ -98,19 +78,6 @@ def redshift_connect():
 
     print('connected')
     return conn
-
-def get_all_bucket_keys(bucket_name):
-    s3 = boto3.client('s3')
-    object_list = s3.list_objects_v2(Bucket = bucket_name)
-    contents = object_list["Contents"]
-    
-    key_names = []
-    
-    for key in contents:
-        key_names.append(key["Key"])
-        
-    return key_names
-
 
 def extract(bucket_name, cafe_csv_key_name, sql_textfile_name):
     raw_data, sql_code = read_from_s3(bucket_name, cafe_csv_key_name, sql_textfile_name)
@@ -505,11 +472,11 @@ def corresponding_unique_days_months_years(datetimes):
     unique_years_as_tuple_list = []
 
     for day in unique_days:
-        unique_days_as_tuple_list.append((day, ))
+        unique_days_as_tuple_list.append((day, day))
     for month in unique_months:
-        unique_months_as_tuple_list.append((month, ))
+        unique_months_as_tuple_list.append((month, month))
     for year in unique_years:
-        unique_years_as_tuple_list.append((year, ))
+        unique_years_as_tuple_list.append((year, year))
 
     return days, unique_days_as_tuple_list, months, unique_months_as_tuple_list, years, unique_years_as_tuple_list
 
@@ -528,7 +495,7 @@ def reformatting_data_for_sql(data):
     unique_locations = []
 
     for loc in location_set:
-        unique_locations.append((loc, ))
+        unique_locations.append((loc,loc))
 
     datetimes = data["datetime"]
     days, unique_days, months, unique_months, years, unique_years = corresponding_unique_days_months_years(datetimes)
@@ -544,7 +511,9 @@ def reformatting_data_for_sql(data):
     # For each item in a purchase, for each purchase in all_purchases, extracting item
     # and appending to all_items list
     all_items = [item for purchase in all_purchases for item in purchase]
-    #OUTPUT FORMAT: all_items = [(item1),(item7),(item6),(item1)]
+    #OUTPUT FORMAT: all_items = [(item1_info),(item7),(item6),(item1)]
+    
+    all_items_for_duplicate_check = list(zip(all_items,all_items))
     unique_items = list(set(all_items))
 
     return datetimes, customer_names, unique_locations, days, unique_days, months, unique_months, years,unique_years, total_prices, payment_methods, card_numbers, unique_items, all_purchases, all_items
@@ -571,18 +540,18 @@ def insert_data_into_tables(data, connection):
             print("inserting data cafe location table")
             print(unique_locations)
             #inserting data into cafes locations table
-            sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
+            sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s) ON DUPLICATE KEY UPDATE Location_name = %s '
             cursor.executemany(sql_command_insert_data_into_table, unique_locations)
             connection.commit()
             print("inserting data day;month;year tables")
             #inserting data into day, month, year tables
-            sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s) ON DUPLICATE KEY UPDATE Day = %s;"
             cursor.executemany( sql_command_insert_data_into_table, unique_days)
             connection.commit()
-            sql_command_insert_data_into_table = "INSERT INTO Month (Month) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Month (Month) VALUES (%s) ON DUPLICATE KEY UPDATE Month = %s;"
             cursor.executemany( sql_command_insert_data_into_table, unique_months)
             connection.commit()
-            sql_command_insert_data_into_table = "INSERT INTO Year (Year) VALUES (%s);"
+            sql_command_insert_data_into_table = "INSERT INTO Year (Year) VALUES (%s) ON DUPLICATE KEY UPDATE Year = %s;"
             cursor.executemany( sql_command_insert_data_into_table, unique_years)
             connection.commit()
 
@@ -656,13 +625,15 @@ def insert_data_into_tables(data, connection):
             #full_datetimes_info = [(datetime_1, day_id, month_id, year_id),
             #(datetime_2, day_id, month_id, year_id), ...]
 
+            full_datetimes_info_for_duplicate_check = list(zip(full_datetimes_info, full_datetimes_info))
+
             #List of only unique datetimes_info
             print("List of only unique datetimes_info")
-            unique_datetimes =  list(set(full_datetimes_info))
+            unique_datetimes =  list(set(full_datetimes_info_for_duplicate_check))
 
             #inserting unique datetimes_info into table Time
             print("inserting unique datetimes_info into table Time")
-            sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (%s, %s,%s,%s)"""
+            sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (%s, %s,%s,%s) ON DUPLICATE KEY UPDATE datetime = %s AND Day_id = %s AND Month_id = %s AND Year_id = %s; """
             cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
             connection.commit()
 
@@ -670,7 +641,7 @@ def insert_data_into_tables(data, connection):
 
             #Inserting data into Items table
             print("inserting data into Items table")
-            sql_command_insert_data_into_table = """INSERT INTO Items (Location_name, Price , Drink_type , Drink_flavour, Drink_size) VALUES (%s, %s, %s,%s,%s)"""
+            sql_command_insert_data_into_table = """INSERT INTO Items (Location_name, Price , Drink_type , Drink_flavour, Drink_size) VALUES (%s, %s, %s,%s,%s) ON DUPLICATE KEY UPDATE Location_name = %s AND Price = %s AND Drink_type = %s AND Drink_flavour = %s AND Drink_size = %s """
             cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
             connection.commit()
             
