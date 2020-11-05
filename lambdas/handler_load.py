@@ -24,7 +24,6 @@ def start(event, context):
     transformed_json = get_json_from_queue(event)
     transformed_dict = convert_json_to_dict(transformed_json)
 
-    sql_code = SQL_TEXTFILE_KEY_NAME #temporary line to avoid error, sql code may be removed soon
     load(transformed_dict, conn, sql_code)
     
 
@@ -90,12 +89,10 @@ def load(cleaned_data, connection, sql_code_txtfile):
     
     create_database_tables(sql_code_txtfile, connection)
 
-    insert_data_into_tables(cleaned_data, connection)
+    insert_data_into_all_tables(cleaned_data, connection)
+
 
 ################## LOAD SECTION ################
-
-################## LOAD SECTION ################
-
 def create_database_tables(sql_code_string, connection):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
@@ -322,7 +319,6 @@ def insert_data_into_day_month_year_tables(data, connection):
 
         #reformatted data suitable for MySQL statements
         unique_days, unique_months, unique_years = reformat_datetime_info_for_sql(data, "UNIQUE")
-        print(datetimes)
         print("Grabbing reformatted day;month;year data")
 
         print("Inserting data day;month;year tables")
