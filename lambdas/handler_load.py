@@ -76,6 +76,7 @@ def redshift_connect():
     print('connected')
     return conn
 
+
 def read_from_s3(bucket, sql_txtfile_key):
     s3 = boto3.client('s3')
 
@@ -84,6 +85,7 @@ def read_from_s3(bucket, sql_txtfile_key):
     sql_code = s3_sql_code['Body'].read().decode('utf-8')
 
     return (sql_code)
+
 
 def load(cleaned_data, connection, sql_code_txtfile):
     
@@ -177,6 +179,7 @@ def corresponding_unique_days_months_years(datetimes):
 
     return days, unique_days_as_tuple_list, months, unique_months_as_tuple_list, years, unique_years_as_tuple_list
 
+
 #Functions to reformat data from dictionary for data to be suitable for MySQL statements 
 def reformat_customer_info_for_sql(data):
     """Extracts customer info from input dictionary and reformats into a required format for MySQL statements."""
@@ -186,6 +189,7 @@ def reformat_customer_info_for_sql(data):
     customer_names = list(zip(first_names, last_names))
 
     return customer_names
+
 
 def reformat_cafe_locations_info_for_sql(data):
     """Extracts cafe locations info from input dictionary and reformats into a required format for MySQL statements."""
@@ -198,6 +202,7 @@ def reformat_cafe_locations_info_for_sql(data):
         unique_locations.append((loc,))
     
     return unique_locations
+
 
 def reformat_datetime_info_for_sql(data, return_type = "ALL" ):
     """Extracts datetime info from input dictionary and reformats into a required format for MySQL statements."""
@@ -212,6 +217,7 @@ def reformat_datetime_info_for_sql(data, return_type = "ALL" ):
     elif return_type == "ALL":
         return datetimes, days, unique_days, months, unique_months, years,unique_years
 
+
 def reformat_payment_info_for_sql(data):
     """Extracts payment info from input dictionary and reformats into a required format for MySQL statements."""
     print("reformatting_payment_data_for_sql")
@@ -221,6 +227,7 @@ def reformat_payment_info_for_sql(data):
     card_numbers = data["card_number"]
 
     return total_prices, payment_methods, card_numbers
+
 
 def reformat_purchases_info_for_sql(data, return_type = "ALL"):
     """Reformats purchases info from input dictionary and reformats into a required format for MySQL statements."""
@@ -251,7 +258,6 @@ def reformat_purchases_info_for_sql(data, return_type = "ALL"):
 
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
-
 def insert_data_into_customer_table(data,connection):
     print("insert_data_into_customer_table")
     """Inserts data into customer table"""
@@ -281,6 +287,7 @@ def insert_data_into_customer_table(data,connection):
 
         data["Customer_id"] = customer_ids_list
 
+
 def insert_data_cafe_locations_table(data, connection):
     print("insert_data_into_cafe_locations_table")
     """Inserts data into cafe locations table"""
@@ -308,6 +315,7 @@ def insert_data_cafe_locations_table(data, connection):
         connection.commit()
         cursor.close()
 
+
 def insert_data_into_day_month_year_tables(data, connection):
     print("insert_data_into_day;month;year_tables")
     """Inserts data into day;month;year tables"""
@@ -333,6 +341,7 @@ def insert_data_into_day_month_year_tables(data, connection):
         cursor.executemany( sql_command_insert_data_into_table, unique_years)
         connection.commit()
         cursor.close()
+
 
 def insert_data_into_payments_table(data,connection):
     print("insert_data_into_payments_tables")
@@ -363,6 +372,7 @@ def insert_data_into_payments_table(data,connection):
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
         connection.commit()
         cursor.close()
+
 
 def insert_data_into_full_datetime_table(data,connection):
     print("insert_data_into_full_datetime_tables")
@@ -457,6 +467,7 @@ def insert_data_into_items_table(data,connection):
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
         connection.commit()
         cursor.close()
+
 
 def insert_data_into_orders_table(data, connection):
     print("insert_data_into_orders_tables")
@@ -577,6 +588,7 @@ def insert_data_into_orders_table(data, connection):
         connection.commit()
         cursor.close()
 
+
 def insert_data_into_all_tables(data, connection):
     print("insert_data_into_all_tables")
     """Inserts data into various database tables"""
@@ -588,10 +600,5 @@ def insert_data_into_all_tables(data, connection):
         insert_data_into_full_datetime_table(data, connection)
         insert_data_into_items_table(data,connection)
         insert_data_into_orders_table(data,connection)
-           
-    # except Exception as e:
-    #     #Rolls back any sql statements committed when error occurs partway to perserve data integrity
-    #     connection.ROLLBACK()
-    #     print(f"Exception Error: {e}")
     finally:
         connection.close()
