@@ -7,7 +7,7 @@ import boto3
 import logging
 import datetime 
 from dotenv import load_dotenv
-
+import re
 
 def start(event, context):
     print("Team One Pipeline")
@@ -15,7 +15,7 @@ def start(event, context):
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
     SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
 
-    # sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
+    sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
 
     load_dotenv()
     conn = redshift_connect()
