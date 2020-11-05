@@ -278,7 +278,7 @@ def insert_data_into_customer_table(data,connection):
         for name in customer_names:
             cursor.execute(sql_command_insert_data_into_table, name)
             connection.commit()
-            sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
+            sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = (SELECT MAX(k.Customer_id) FROM Customers AS k)'
             cursor.execute(sql_command_select_customer_id, name)
             customer_id = cursor.fetchone()[0]
             customer_ids_list.append(customer_id)
