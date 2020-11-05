@@ -384,7 +384,7 @@ def insert_data_into_full_datetime_table(data,connection):
         #Tier 2
 
         #Reformatted datetime data
-        datetimes = data["datatime"]
+        datetimes = data["datetime"]
         days, months, years =  reformat_datetime_info_for_sql(data, "NON-UNIQUE")
         print("Successfully grabbed datetimes data")
 
