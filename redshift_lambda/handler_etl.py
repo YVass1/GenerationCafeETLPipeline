@@ -512,7 +512,7 @@ def reformat_datetime_info_for_sql(data, return_type = "ALL" ):
         return unique_days, unique_months, unique_years
     elif return_type == "NON-UNIQUE":
        return days, months, years
-    else:
+    elif return_type == "ALL":
         return datetimes, days, unique_days, months, unique_months, years,unique_years
 
 def reformat_payment_info_for_sql(data):
@@ -547,8 +547,10 @@ def reformat_purchases_info_for_sql(data, return_type = "ALL"):
         return all_items
     elif return_type == "UNIQUE_ITEMS":
         return unique_items
-    else:
+    elif return_type == "ALL":
         return unique_items, all_purchases, all_items
+    else:
+        print("FAIL")
 
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
