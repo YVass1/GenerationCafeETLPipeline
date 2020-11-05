@@ -18,11 +18,27 @@ resources:
       Properties:
         MessageRetentionPeriod: 1209600
         QueueName: Team1EtoTqueue
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt team1EtoTqueueDLQ.Arn
+          maxReceiveCount: 3
     team1TtoLqueue:
       Type: "AWS::SQS::Queue"
       Properties:
         MessageRetentionPeriod: 1209600
         QueueName: Team1TtoLqueue
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt team1TtoLqueueDLQ.Arn
+          maxReceiveCount: 3
+    team1EtoTqueueDLQ:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1EtoTqueueDLQ    
+    team1TtoLqueueDLQ:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1TtoLqueueDLQ     
 
 functions:
   handler-extract:
@@ -72,18 +88,4 @@ functions:
             Fn::GetAtt:
               - team1TtoLqueue
               - Arn
-  redshift-lambda:
-    runtime: python3.8
-    handler: handler_etl.start
-    module: lambdas
-    vpc:
-      securityGroupIds:
-        - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
-      subnetIds:
-        - !ImportValue RedshiftAndVPC-VPCPrivateSubnet
-    environment:
-      DB_HOST: !ImportValue RedshiftAndVPC-ClusterAddress
-      DB_USER: team1
-      DB_PORT: !ImportValue RedshiftAndVPC-ClusterPort
-      DB_NAME: team1db
-      DB_CLUSTER: !ImportValue RedshiftAndVPC-ClusterID
+  
