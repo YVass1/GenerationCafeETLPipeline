@@ -415,7 +415,7 @@ def insert_data_into_full_datetime_table(data,connection):
 
         #Inserting data into table Time
         #First check datetimes corresponding day/month/year and then extract its id from tables 
-        #Then id data insert into time table
+        #Then id data insert into time_history table
 
         #Looping through days list which is 1-to-1 mapping with datetimes list
         #For datetimes corresponding day e.g. Monday, extracting its Day_id and
@@ -463,9 +463,9 @@ def insert_data_into_full_datetime_table(data,connection):
         print("List of only unique datetimes_info")
         unique_datetimes =  list(set(full_datetimes_info))
 
-        #inserting unique datetimes_info into table Time
-        print("inserting unique datetimes_info into table Time")
-        sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (%s, %s,%s,%s) """
+        #inserting unique datetimes_info into table Time_history
+        print("inserting unique datetimes_info into table Time_history")
+        sql_command_insert_data_into_table = """INSERT INTO Time_history (datetime,Day_id,Month_id,Year_id) VALUES (%s, %s,%s,%s) """
         cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
         connection.commit()
         cursor.close()
@@ -517,7 +517,7 @@ def insert_data_into_orders_table(data, connection):
         print("Selecting Time_id and appending to time_ids list")
         time_ids = []
         for time in datetimes:
-            cursor.execute("""SELECT t.Time_id From Time AS t WHERE t.datetime = %s""", (time, ))
+            cursor.execute("""SELECT t.Time_id From Time_history AS t WHERE t.datetime = %s""", (time, ))
             connection.commit()
             time_id = cursor.fetchone()[0]
             time_ids.append(time_id)
