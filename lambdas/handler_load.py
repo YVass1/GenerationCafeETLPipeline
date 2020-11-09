@@ -227,7 +227,7 @@ def reformat_items_info_for_sql(data, return_type = "ALL"):
     all_items = [item for purchase in all_purchases for item in purchase]
     #OUTPUT FORMAT: all_items = [(item1_info),(item7_info),(item6_info),(item8_info)]
     
-    #all_items_for_duplicate_check = list(zip(all_items,all_items))
+    #ensuring unique items only in the list
     unique_items = list(set(all_items))
 
     if return_type == "ALL_PURCHASES":
