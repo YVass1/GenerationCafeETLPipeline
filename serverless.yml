@@ -18,11 +18,27 @@ resources:
       Properties:
         MessageRetentionPeriod: 1209600
         QueueName: Team1EtoTqueue
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt team1EtoTqueueDLQ.Arn
+          maxReceiveCount: 3
     team1TtoLqueue:
       Type: "AWS::SQS::Queue"
       Properties:
         MessageRetentionPeriod: 1209600
         QueueName: Team1TtoLqueue
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt team1TtoLqueueDLQ.Arn
+          maxReceiveCount: 3
+    team1EtoTqueueDLQ:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1EtoTqueueDLQ    
+    team1TtoLqueueDLQ:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        MessageRetentionPeriod: 1209600
+        QueueName: Team1TtoLqueueDLQ     
 
 functions:
   handler-extract:

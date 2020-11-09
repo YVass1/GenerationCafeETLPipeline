@@ -13,7 +13,7 @@ def start(event, context):
     print("Team One Pipeline")
     
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "create_tables_postgresql.txt"
+    SQL_TEXTFILE_KEY_NAME = "create_table_sql_code.txt"
 
     sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
 
@@ -24,7 +24,6 @@ def start(event, context):
     transformed_json = get_json_from_queue(event)
     transformed_dict = convert_json_to_dict(transformed_json)
 
-    sql_code = SQL_TEXTFILE_KEY_NAME #temporary line to avoid error, sql code may be removed soon
     load(transformed_dict, conn, sql_code)
     
 
@@ -77,6 +76,7 @@ def redshift_connect():
     print('connected')
     return conn
 
+
 def read_from_s3(bucket, sql_txtfile_key):
     s3 = boto3.client('s3')
 
@@ -86,16 +86,15 @@ def read_from_s3(bucket, sql_txtfile_key):
 
     return (sql_code)
 
+
 def load(cleaned_data, connection, sql_code_txtfile):
     
     create_database_tables(sql_code_txtfile, connection)
 
     insert_data_into_all_tables(cleaned_data, connection)
 
-################## LOAD SECTION ################
 
 ################## LOAD SECTION ################
-
 def create_database_tables(sql_code_string, connection):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
@@ -180,6 +179,7 @@ def corresponding_unique_days_months_years(datetimes):
 
     return days, unique_days_as_tuple_list, months, unique_months_as_tuple_list, years, unique_years_as_tuple_list
 
+
 #Functions to reformat data from dictionary for data to be suitable for MySQL statements 
 def reformat_customer_info_for_sql(data):
     """Extracts customer info from input dictionary and reformats into a required format for MySQL statements."""
@@ -189,6 +189,7 @@ def reformat_customer_info_for_sql(data):
     customer_names = list(zip(first_names, last_names))
 
     return customer_names
+
 
 def reformat_cafe_locations_info_for_sql(data):
     """Extracts cafe locations info from input dictionary and reformats into a required format for MySQL statements."""
@@ -201,6 +202,7 @@ def reformat_cafe_locations_info_for_sql(data):
         unique_locations.append((loc,))
     
     return unique_locations
+
 
 def reformat_datetime_info_for_sql(data, return_type = "ALL" ):
     """Extracts datetime info from input dictionary and reformats into a required format for MySQL statements."""
@@ -215,6 +217,7 @@ def reformat_datetime_info_for_sql(data, return_type = "ALL" ):
     elif return_type == "ALL":
         return datetimes, days, unique_days, months, unique_months, years,unique_years
 
+
 def reformat_payment_info_for_sql(data):
     """Extracts payment info from input dictionary and reformats into a required format for MySQL statements."""
     print("reformatting_payment_data_for_sql")
@@ -224,6 +227,7 @@ def reformat_payment_info_for_sql(data):
     card_numbers = data["card_number"]
 
     return total_prices, payment_methods, card_numbers
+
 
 def reformat_purchases_info_for_sql(data, return_type = "ALL"):
     """Reformats purchases info from input dictionary and reformats into a required format for MySQL statements."""
@@ -254,7 +258,6 @@ def reformat_purchases_info_for_sql(data, return_type = "ALL"):
 
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
-
 def insert_data_into_customer_table(data,connection):
     print("insert_data_into_customer_table")
     """Inserts data into customer table"""
@@ -272,10 +275,12 @@ def insert_data_into_customer_table(data,connection):
         #inserting data into customer table
         print("Inserting customer info data into table")
         sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
+
         for name in customer_names:
+            print("executing name addition")
             cursor.execute(sql_command_insert_data_into_table, name)
             connection.commit()
-        
+            
         number_of_rows_inserted = len(customer_names)
         sql_command_select_customer_id = f'SELECT c.Customer_id FROM Customers AS c ORDER BY c.Customer_id DESC LIMIT {number_of_rows_inserted}'
         cursor.execute(sql_command_select_customer_id)
@@ -290,6 +295,7 @@ def insert_data_into_customer_table(data,connection):
         cursor.close()
 
         data["Customer_id"] = customer_ids_list
+
 
 def insert_data_cafe_locations_table(data, connection):
     print("insert_data_into_cafe_locations_table")
@@ -324,6 +330,7 @@ def insert_data_cafe_locations_table(data, connection):
         connection.commit()
         cursor.close()
 
+
 def insert_data_into_day_month_year_tables(data, connection):
     print("insert_data_into_day;month;year_tables")
     """Inserts data into day;month;year tables"""
@@ -335,7 +342,6 @@ def insert_data_into_day_month_year_tables(data, connection):
 
         #reformatted data suitable for MySQL statements
         unique_days, unique_months, unique_years = reformat_datetime_info_for_sql(data, "UNIQUE")
-        print(datetimes)
         print("Grabbing reformatted day;month;year data")
 
         print("Inserting data day;month;year tables")
@@ -358,6 +364,7 @@ def insert_data_into_day_month_year_tables(data, connection):
         cursor.executemany( sql_command_insert_data_into_table, unique_years)
         connection.commit()
         cursor.close()
+
 
 def insert_data_into_payments_table(data,connection):
     print("insert_data_into_payments_tables")
@@ -389,6 +396,7 @@ def insert_data_into_payments_table(data,connection):
         connection.commit()
         cursor.close()
 
+
 def insert_data_into_full_datetime_table(data,connection):
     print("insert_data_into_full_datetime_tables")
     """Inserts data into full datetime table"""
@@ -399,7 +407,7 @@ def insert_data_into_full_datetime_table(data,connection):
         #Tier 2
 
         #Reformatted datetime data
-        datetimes = data["datatime"]
+        datetimes = data["datetime"]
         days, months, years =  reformat_datetime_info_for_sql(data, "NON-UNIQUE")
         print("Successfully grabbed datetimes data")
 
@@ -482,6 +490,7 @@ def insert_data_into_items_table(data,connection):
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
         connection.commit()
         cursor.close()
+
 
 def insert_data_into_orders_table(data, connection):
     print("insert_data_into_orders_tables")
@@ -602,6 +611,7 @@ def insert_data_into_orders_table(data, connection):
         connection.commit()
         cursor.close()
 
+
 def insert_data_into_all_tables(data, connection):
     print("insert_data_into_all_tables")
     """Inserts data into various database tables"""
@@ -613,10 +623,8 @@ def insert_data_into_all_tables(data, connection):
         insert_data_into_full_datetime_table(data, connection)
         insert_data_into_items_table(data,connection)
         insert_data_into_orders_table(data,connection)
-           
-    # except Exception as e:
-    #     #Rolls back any sql statements committed when error occurs partway to perserve data integrity
-    #     connection.ROLLBACK()
-    #     print(f"Exception Error: {e}")
+    except Exception as e:
+        print("insert_data_into_all_tables failure")
+        print(e)
     finally:
         connection.close()
