@@ -248,45 +248,6 @@ def reformat_items_info_for_sql(data, return_type = "ALL"):
 #####################################################################################################################
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
-# def insert_data_into_customer_table(data,connection):
-#     print("insert_data_into_customer_table")
-#     """Inserts data into customer table"""
-#     with connection.cursor() as cursor:
-#         print("got cursor")
-
-#         #Tier 1
-
-#         #reformatted data suitable for MySQL statements
-#         customer_names = reformat_customer_info_for_sql(data)
-#         print("Grabbing reformatted customer info")
-#         print(customer_names)
-#         customer_ids_list = []
-        
-#         #inserting data into customer table
-#         print("Inserting customer info data into table")
-#         sql_command_insert_data_into_table = 'INSERT INTO Customers (Forename, Surname) VALUES (%s, %s)'
-
-#         for name in customer_names:
-#             print("executing name addition")
-#             cursor.execute(sql_command_insert_data_into_table, name)
-#             connection.commit()
-            
-#         number_of_rows_inserted = len(customer_names)
-#         sql_command_select_customer_id = f'SELECT c.Customer_id FROM Customers AS c ORDER BY c.Customer_id DESC LIMIT {number_of_rows_inserted}'
-#         cursor.execute(sql_command_select_customer_id)
-#         # sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
-#         print("Customer ids printed out directly from sql command")
-#         customer_id_tuple_list = cursor.fetchall()
-#         print(customer_id_tuple_list)
-#         for tup in customer_id_tuple_list:
-#             customer_ids_list.append(tup[0])
-
-#         print("Assuming customer ids as a tuplecame in a list. Extracting first value of tuple + append to list ")
-#         print(customer_ids_list)
-        
-#         cursor.close()
-
-#         data["Customer_id"] = customer_ids_list
 
 
 def insert_data_cafe_locations_table(data, connection):
