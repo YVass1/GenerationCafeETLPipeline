@@ -286,11 +286,13 @@ def insert_data_into_customer_table(data,connection):
         cursor.execute(sql_command_select_customer_id)
         # sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
         print("Customer ids printed out directly from sql command")
-        print(cursor.fetchall())
-        customer_id = cursor.fetchall()[0]
-        customer_ids_list.append(customer_id)
+        customer_id_tuple_list = cursor.fetchall()
+        print(customer_id_tuple_list)
+        for tup in customer_id_tuple_list:
+            customer_ids_list.append(tup[0])
+
         print("Assuming customer ids as a tuplecame in a list. Extracting first value of tuple + append to list ")
-        print(customer_id_list)
+        print(customer_ids_list)
         
         cursor.close()
 
