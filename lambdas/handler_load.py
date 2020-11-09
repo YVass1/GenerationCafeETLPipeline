@@ -90,7 +90,7 @@ def load(cleaned_data, connection, sql_code_txtfile):
     
     create_database_tables(sql_code_txtfile, connection)
 
-    insert_data_into_tables(cleaned_data, connection)
+    insert_data_into_all_tables(cleaned_data, connection)
 
 ################## LOAD SECTION ################
 
@@ -275,10 +275,17 @@ def insert_data_into_customer_table(data,connection):
         for name in customer_names:
             cursor.execute(sql_command_insert_data_into_table, name)
             connection.commit()
-            sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
-            cursor.execute(sql_command_select_customer_id, name)
-            customer_id = cursor.fetchone()[0]
-            customer_ids_list.append(customer_id)
+        
+        number_of_rows_inserted = len(customer_names)
+        sql_command_select_customer_id = f'SELECT c.Customer_id FROM Customers AS c ORDER BY c.Customer_id DESC LIMIT {number_of_rows_inserted}'
+        cursor.execute(sql_command_select_customer_id)
+        # sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
+        print("Customer ids printed out directly from sql command")
+        print(cursor.fetchall())
+        customer_id = cursor.fetchall()[0]
+        customer_ids_list.append(customer_id)
+        print("Assuming customer ids as a tuplecame in a list. Extracting first value of tuple + append to list ")
+        print(customer_id_list)
         
         cursor.close()
 
@@ -302,7 +309,13 @@ def insert_data_cafe_locations_table(data, connection):
         #inserting data into cafes locations table
         
         #Ongoing work for duplicates
-        #create_location_staging_table = "CREATE TABLE Cafe_locations_update AS SELECT * FROM Cafe_locations;"
+        # other option: 
+        #CREATE TEMP TABLE staging_table (LIKE target_table); staging table should have new data
+        #INSERT INTO staging_table;
+        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
+        #INSERT INTO target_table SELECT * FROM staging_table;
+
+        #create_location_staging_table = "CREATE TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;"
         #cursor.execute(create_location_staging_table)
         #connection.commit()
         
@@ -327,6 +340,14 @@ def insert_data_into_day_month_year_tables(data, connection):
 
         print("Inserting data day;month;year tables")
         #inserting data into day, month, year tables
+
+        #Ongoing duplicates work:
+        #CREATE TEMP TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;
+
+        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
+        #INSERT INTO target_table SELECT * FROM staging_table;
+
+
         sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s);"
         cursor.executemany( sql_command_insert_data_into_table, unique_days)
         connection.commit()
