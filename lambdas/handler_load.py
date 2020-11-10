@@ -290,7 +290,7 @@ def insert_data_cafe_locations_table(data, connection):
 
 
 
-def insert_data_into_purchase_times_table(data,connection):
+def insert_data_into_purchase_times_table(data, connection):
     print("insert_data_into_purchase_times_table")
     """Inserts data into full datetime table"""
 
@@ -322,7 +322,7 @@ def insert_data_into_purchase_times_table(data,connection):
         connection.commit()
         cursor.close()
 
-def insert_data_into_payments_table(data,connection):
+def insert_data_into_payments_table(data, connection):
     print("insert_data_into_payments_tables")
     """Inserts data into payments table"""
 
@@ -360,7 +360,7 @@ def insert_data_into_payments_table(data,connection):
         cursor.close()
 
 
-def insert_data_into_items_table(data,connection):
+def insert_data_into_items_table(data, connection):
     print("insert_data_into_items_tables")
     """Inserts data into items table"""
 
