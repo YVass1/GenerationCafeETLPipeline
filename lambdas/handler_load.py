@@ -209,7 +209,7 @@ def reformat_payment_info_for_sql(data):
 
     #reformatting data --> In the list : For each customer creating a tuple with names, payment info, location and datetime
     print("reformatting data --> In the list : For each customer creating a tuple with names, payment info, location and datetime") 
-    payments_info = list(zip(first_names,last_names total_prices, payment_methods, card_numbers, locations, datetimes))
+    payments_info = list(zip(first_names, last_names, total_prices, payment_methods, card_numbers, locations, datetimes))
         
     return payments_info
 
@@ -219,7 +219,7 @@ def reformat_items_info_for_sql(data, return_type = "ALL"):
     print("reformat_items_info_for_sql")
     
     #For each dictionary in purchase list, joining drink ordered with drink size, flavour, price 
-    all_purchases = [list(zip( purchase["drink_type"], purchase["drink_flavour"],purchase["drink_size"], purchase["drink_price"])) for purchase in data["purchase"]] 
+    all_purchases = [list(zip(purchase["drink_type"], purchase["drink_flavour"], purchase["drink_size"], purchase["drink_price"])) for purchase in data["purchase"]] 
     #OUTPUT FORMAT: all_purchases = [ [(drink1, flavour1, size1, price1), (drink6, flavour6, size6, price6)], [(drink9, flavour9, size9, price9)] , ....]
     
     # For each item in a purchase, for each purchase in all_purchases, extracting item
@@ -316,7 +316,7 @@ def insert_data_into_purchase_times_table(data,connection):
 
         #inserting unique full_datetimes_info into table Purchase_times table
         print("inserting unique datetimes_info into table Purchase_times")
-        sql_command_insert_data_into_table = """INSERT INTO Purchase_times (Datetime,Day,Month,Year,Time) VALUES (%s, %s,%s,%s,%s) """
+        sql_command_insert_data_into_table = """INSERT INTO Purchase_times (Datetime, Day, Month, Year, Time) VALUES (%s, %s, %s, %s, %s) """
         cursor.executemany(sql_command_insert_data_into_table, unique_full_datetimes_info)
         connection.commit()
         cursor.close()
@@ -336,13 +336,13 @@ def insert_data_into_payments_table(data,connection):
 
         #inserting payment info data into payments table
         print("inserting payment info data into payments table") 
-        sql_command_insert_data_into_table = """INSERT INTO Payments (Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES (%s,%s,%s,%s,%s,%s,%s);"""
+        sql_command_insert_data_into_table = """INSERT INTO Payments (Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES (%s, %s, %s, %s, %s, %s, %s);"""
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
         connection.commit()
         
         #Extracting recently inserted payment ids
-        number_of_rows_inserted = len(payment_info)
-        sql_command_select_payment_ids = f'SELECT c.Customer_id FROM Customers AS c ORDER BY c.Customer_id DESC LIMIT {number_of_rows_inserted}'
+        number_of_rows_inserted = len(payments_info)
+        sql_command_select_payment_ids = f'SELECT p.Payment_id FROM Payments AS p ORDER BY c.Payment_id DESC LIMIT {number_of_rows_inserted}'
         cursor.execute(sql_command_select_payment_ids)
 
         payment_ids_tuple_list = cursor.fetchall()
@@ -350,7 +350,7 @@ def insert_data_into_payments_table(data,connection):
         
         payment_ids_list = []
         for tup in payment_ids_tuple_list:
-            payment_ids_list.append(tup[0])
+            payment_ids_list.insert(0, tup[0]) #inserting at 0 constantly will invert the element order, since elements are grabbed in descending order from database
         print("Extracting payment_id from tuple")
 
         data["payment_id"] = payment_ids_list
@@ -376,7 +376,7 @@ def insert_data_into_items_table(data,connection):
 
         #Inserting data into Items table
         print("Inserting data into Items table")
-        sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES ( %s, %s,%s,%s) """
+        sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES ( %s, %s, %s, %s) """
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
         connection.commit()
         cursor.close()
