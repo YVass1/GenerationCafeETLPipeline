@@ -175,7 +175,8 @@ def reformat_datetime_info_for_sql(data):
     
     years = [dtime.strftime("%Y") for dtime in datetime_objects]
 
-    times = [dtime.time().strftime('%H:%M:%S') for dtime in datetime_objects]
+    #Temporarily using the full timestamp as the time. To extract just time, would use the code: times = [dtime.time().strftime('%H:%M:%S') for dtime in datetime_objects]
+    times = data["datetime"]
     
     return datetimes, days, months, years, times
 
