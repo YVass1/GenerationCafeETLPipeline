@@ -343,7 +343,7 @@ def insert_data_into_payments_table(data,connection):
         
         #Extracting recently inserted payment ids
         number_of_rows_inserted = len(payments_info)
-        sql_command_select_payment_ids = f'SELECT p.Payment_id FROM Payments AS p ORDER BY c.Payment_id DESC LIMIT {number_of_rows_inserted}'
+        sql_command_select_payment_ids = f'SELECT p.Payment_id FROM Payments AS p ORDER BY p.Payment_id DESC LIMIT {number_of_rows_inserted}'
         cursor.execute(sql_command_select_payment_ids)
 
         payment_ids_tuple_list = cursor.fetchall()
