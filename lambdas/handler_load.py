@@ -377,7 +377,7 @@ def insert_data_into_items_table(data,connection):
 
         #Inserting data into Items table
         print("Inserting data into Items table")
-        sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES ( %s, %s, %s, %s) """
+        sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES (%s, %s, %s, %s) """
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
         connection.commit()
         cursor.close()
@@ -477,7 +477,7 @@ def insert_data_into_orders_table(data, connection):
                     orders_info.append((payment_id,item_id))
         
         print("executing many")
-        sql_command_insert_data_into_table = """INSERT INTO Orders (Payment_id, Item_id, Time_id) VALUES (%s, %s, %s)"""           
+        sql_command_insert_data_into_table = """INSERT INTO Orders (Payment_id, Item_id) VALUES (%s, %s)"""           
         cursor.executemany(sql_command_insert_data_into_table, orders_info)
         connection.commit()
         cursor.close()
