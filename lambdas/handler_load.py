@@ -13,7 +13,7 @@ def start(event, context):
     print("Team One Pipeline")
     
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    SQL_TEXTFILE_KEY_NAME = "create_table_sql_code.txt"
+    SQL_TEXTFILE_KEY_NAME = "tables_creation_sql_code.txt"
 
     sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
 
@@ -280,15 +280,19 @@ def insert_data_into_customer_table(data,connection):
             print("executing name addition")
             cursor.execute(sql_command_insert_data_into_table, name)
             connection.commit()
+            
+        number_of_rows_inserted = len(customer_names)
+        sql_command_select_customer_id = f'SELECT c.Customer_id FROM Customers AS c ORDER BY c.Customer_id DESC LIMIT {number_of_rows_inserted}'
+        cursor.execute(sql_command_select_customer_id)
+        # sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Forename = %s AND c.Surname = %s AND c.Customer_id = MAX(c.Customer_id)'
+        print("Customer ids printed out directly from sql command")
+        customer_id_tuple_list = cursor.fetchall()
+        print(customer_id_tuple_list)
+        for tup in customer_id_tuple_list:
+            customer_ids_list.append(tup[0])
 
-            print("finding max id")
-            sql_command_select_customer_id = 'SELECT c.Customer_id FROM Customers AS c WHERE c.Customer_id = (SELECT MAX(k.Customer_id) FROM Customers AS k)'
-            cursor.execute(sql_command_select_customer_id)
-            connection.commit()
-
-            print("fetching max id from query")
-            customer_id = cursor.fetchone()[0]
-            customer_ids_list.append(customer_id)
+        print("Assuming customer ids as a tuplecame in a list. Extracting first value of tuple + append to list ")
+        print(customer_ids_list)
         
         cursor.close()
 
@@ -313,7 +317,13 @@ def insert_data_cafe_locations_table(data, connection):
         #inserting data into cafes locations table
         
         #Ongoing work for duplicates
-        #create_location_staging_table = "CREATE TABLE Cafe_locations_update AS SELECT * FROM Cafe_locations;"
+        # other option: 
+        #CREATE TEMP TABLE staging_table (LIKE target_table); staging table should have new data
+        #INSERT INTO staging_table;
+        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
+        #INSERT INTO target_table SELECT * FROM staging_table;
+
+        #create_location_staging_table = "CREATE TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;"
         #cursor.execute(create_location_staging_table)
         #connection.commit()
         
@@ -338,6 +348,14 @@ def insert_data_into_day_month_year_tables(data, connection):
 
         print("Inserting data day;month;year tables")
         #inserting data into day, month, year tables
+
+        #Ongoing duplicates work:
+        #CREATE TEMP TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;
+
+        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
+        #INSERT INTO target_table SELECT * FROM staging_table;
+
+
         sql_command_insert_data_into_table = "INSERT INTO Day (Day) VALUES (%s);"
         cursor.executemany( sql_command_insert_data_into_table, unique_days)
         connection.commit()
@@ -397,7 +415,7 @@ def insert_data_into_full_datetime_table(data,connection):
 
         #Inserting data into table Time
         #First check datetimes corresponding day/month/year and then extract its id from tables 
-        #Then id data insert into time table
+        #Then id data insert into time_history table
 
         #Looping through days list which is 1-to-1 mapping with datetimes list
         #For datetimes corresponding day e.g. Monday, extracting its Day_id and
@@ -445,9 +463,9 @@ def insert_data_into_full_datetime_table(data,connection):
         print("List of only unique datetimes_info")
         unique_datetimes =  list(set(full_datetimes_info))
 
-        #inserting unique datetimes_info into table Time
-        print("inserting unique datetimes_info into table Time")
-        sql_command_insert_data_into_table = """INSERT INTO Time (datetime,Day_id,Month_id,Year_id) VALUES (%s, %s,%s,%s) """
+        #inserting unique datetimes_info into table Time_history
+        print("inserting unique datetimes_info into table Time_history")
+        sql_command_insert_data_into_table = """INSERT INTO Time_history (datetime,Day_id,Month_id,Year_id) VALUES (%s, %s,%s,%s) """
         cursor.executemany(sql_command_insert_data_into_table, unique_datetimes)
         connection.commit()
         cursor.close()
@@ -499,7 +517,7 @@ def insert_data_into_orders_table(data, connection):
         print("Selecting Time_id and appending to time_ids list")
         time_ids = []
         for time in datetimes:
-            cursor.execute("""SELECT t.Time_id From Time AS t WHERE t.datetime = %s""", (time, ))
+            cursor.execute("""SELECT t.Time_id From Time_history AS t WHERE t.datetime = %s""", (time, ))
             connection.commit()
             time_id = cursor.fetchone()[0]
             time_ids.append(time_id)
