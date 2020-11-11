@@ -28,7 +28,7 @@ ON I.Item_id = O.Item_id
 Inner JOIN Time T
 ON O.Time_id = T.Time_id
 
-SELECT O.Order_id, O.Item_id, O.Payment_id, O.Time_id, I.Location_name, I.Price, I.Drink_type, I.Drink_flavour, I.Drink_size, P.Customer_id, P.Total_amount, P.Payment_type, P.Card_number, T.datetime, T.Day_id, T.Month_id, T.Year_id
+SELECT O.Order_id, O.Item_id, O.Payment_id, O.Time_id, I.Location_name, I.Price, I.Drink_type, I.Drink_flavour, I.Drink_size, P.Customer_id, P.Total_amount, P.Payment_type, P.Card_number, T.datetime, T.Day_id, T.Month_id, T.Year_id, C.Forename, C.Surname, D.Day, M.Month, Y.Year
 FROM Orders O 
 INNER JOIN Items I
 ON I.Item_id = O.Item_id
@@ -36,6 +36,16 @@ INNER JOIN Time T
 ON O.Time_id = T.Time_id
 INNER JOIN Payments P
 ON O.Payment_id = P.Payment_id
+INNER JOIN Customers C
+ON C.Customer_id = P.Customer_id
+INNER JOIN Cafe_locations L
+ON L.Location_name = I.Location_name
+INNER JOIN Day D
+ON D.Day_id = T.Day_id
+INNER JOIN Month M
+ON M.Month_id = T.Month_id
+INNER JOIN Year Y 
+ON Y.Year_id = T.Year_id
 
 
 DROP TABLE IF EXISTS Time CASCADE;
