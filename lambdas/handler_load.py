@@ -396,9 +396,7 @@ def insert_data_into_orders_table(data, connection):
 
         #Fetching required data to be used
   
-        datetimes =  data["datetime"]
         payment_ids = data["payment_id"]
-        payments_info = reformat_payment_info_for_sql(data)
         all_purchases = reformat_items_info_for_sql(data, "ALL_PURCHASES")
 
         print("Grabbing payment_ids/payment_info/purchase_info")
@@ -411,10 +409,9 @@ def insert_data_into_orders_table(data, connection):
         #Selecting items_id for the corresponding payment_id 
 
         print("Selecting items_id for the corresponding payment_id")
-        item_ids = []
         orders_info = []
 
-        for all_purchases in all_purchases_with_payment_id:
+        for purchase in all_purchases_with_payment_id:
             print(f"Length of 'all_purchases_with_payment_id' list: {len(all_purchases_with_payment_id)}")
             print(f"Length of purchase[1] for this purchase: {len(purchase[1])}")
             for drink_order in purchase[1]:
