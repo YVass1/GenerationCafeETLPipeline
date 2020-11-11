@@ -406,6 +406,7 @@ def insert_data_into_orders_table(data, connection):
         #Orders table
         #Each payment id joined with purchase (which is a list)
         print("Joining payment_id with purchase_info for each purchase made")
+        all_purchases_with_payment_id = list(zip(payment_ids, convert_none_data_to_null(all_purchases)))
         
         #Selecting items_id for the corresponding payment_id 
 
@@ -413,65 +414,71 @@ def insert_data_into_orders_table(data, connection):
         item_ids = []
         orders_info = []
 
+        for all_purchases in all_purchases_with_payment_id:
+            print(f"Length of 'all_purchases_with_payment_id' list: {len(all_purchases_with_payment_id)}")
+            print(f"Length of purchase[1] for this purchase: {len(purchase[1])}")
+            for drink_order in purchase[1]:
 
-        for payment_id, drink_order in zip(payment_ids, convert_none_data_to_null(all_purchases)):
+                drink_flavour_index = 1
+                drink_size_index = 2
+                
+                if is_value_none(drink_flavour_index,drink_order) and is_value_none(drink_size_index, drink_order):
+                    
+                    drink_order_list = list(drink_order)
 
-            drink_flavour_index = 1
-            drink_size_index = 2
-            
-            if is_value_none(drink_flavour_index,drink_order) and is_value_none(drink_size_index, drink_order):
-                
-                drink_order_list = list(drink_order)
+                    #removing index 1 and index 2
+                    #note index 3 is not inclusive so it is not removed
+                    del drink_order_list[1:3]
+                    
+                    cursor.execute("""SELECT i.Item_id FROM  
+                    Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour IS NULL
+                    AND Drink_size IS NULL AND i.Price = %s """, drink_order_list)
+                    connection.commit()
+                    
+                    item_id = cursor.fetchone()[0]
+                    payment_id = purchase[0]
+                    
+                    orders_info.append((payment_id, item_id))
 
-                #removing index 1 and index 2
-                #note index 3 is not inclusive so it is not removed
-                del drink_order_list[1:3]
-                
-                cursor.execute("""SELECT i.Item_id FROM  
-                Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour IS NULL
-                AND Drink_size IS NULL AND i.Price = %s """, drink_order_list)
-                connection.commit()
-                
-                item_id = cursor.fetchone()[0]
-                
-                orders_info.append((payment_id, item_id))
+                elif is_value_none( drink_flavour_index, drink_order):
+                    drink_order_list = list(drink_order)
+                    drink_order_list.remove(drink_order_list[drink_flavour_index])
+                    
+                    cursor.execute("""SELECT i.Item_id FROM  
+                    Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
+                    AND Drink_size = %s AND i.Price = %s""", drink_order_list)
+                    connection.commit()
+                    
+                    item_id = cursor.fetchone()[0]
+                    payment_id = purchase[0]
+                    
+                    orders_info.append((payment_id,item_id))
 
-            elif is_value_none( drink_flavour_index, drink_order):
-                drink_order_list = list(drink_order)
-                drink_order_list.remove(drink_order_list[drink_flavour_index])
+                elif is_value_none(drink_size_index ,drink_order):
+                    
+                    drink_order_list = list(drink_order)
+                    drink_order_list.remove(drink_order_list[drink_size_index])
+                    
+                    cursor.execute("""SELECT i.Item_id FROM  
+                    Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
+                    AND Drink_size IS NULL AND i.Price = %s""", drink_order_list)
+                    connection.commit()
+                    
+                    item_id = cursor.fetchone()[0]
+                    payment_id = purchase[0] 
+                    
+                    orders_info.append((payment_id, item_id))
                 
-                cursor.execute("""SELECT i.Item_id FROM  
-                Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
-                AND Drink_size = %s AND i.Price = %s""", drink_order_list)
-                connection.commit()
-                
-                item_id = cursor.fetchone()[0]
-               
-                orders_info.append((payment_id,item_id))
-
-            elif is_value_none(drink_size_index ,drink_order):
-                
-                drink_order_list = list(drink_order)
-                drink_order_list.remove(drink_order_list[drink_size_index])
-                
-                cursor.execute("""SELECT i.Item_id FROM  
-                Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
-                AND Drink_size IS NULL AND i.Price = %s""", drink_order_list)
-                connection.commit()
-                
-                item_id = cursor.fetchone()[0]
-                
-                orders_info.append((payment_id, item_id))
-            
-            else:
-                cursor.execute("""SELECT i.Item_id FROM  
-                Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
-                AND Drink_size= %s AND i.Price = %s """, drink_order)
-                connection.commit()
-                
-                item_id = cursor.fetchone()[0]
-                
-                orders_info.append((payment_id,item_id))
+                else:
+                    cursor.execute("""SELECT i.Item_id FROM  
+                    Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
+                    AND Drink_size= %s AND i.Price = %s """, drink_order)
+                    connection.commit()
+                    
+                    item_id = cursor.fetchone()[0]
+                    payment_id = purchase[0]
+                    
+                    orders_info.append((payment_id,item_id))
                 
         print("Printing orders info: list of tuples with 2 arguments")
         print(orders_info)
