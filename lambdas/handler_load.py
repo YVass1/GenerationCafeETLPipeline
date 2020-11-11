@@ -21,6 +21,9 @@ def start(event, context):
     conn = redshift_connect()
     logging.getLogger().setLevel(0)
 
+    print(event)
+    print(context)
+
     transformed_json = get_json_from_queue(event)
     transformed_dict = convert_json_to_dict(transformed_json)
 
@@ -118,7 +121,6 @@ def create_database_tables(sql_code_string, connection):
             cursor.close()
 
     except Exception as e:
-        print("Executing empty string")
         print(f"Exception Error: {e}")
 
 
@@ -226,10 +228,13 @@ def reformat_items_info_for_sql(data, return_type = "ALL"):
     # For each item in a purchase, for each purchase in all_purchases, extracting item
     # and appending to all_items list
     all_items = [item for purchase in all_purchases for item in purchase]
+    print("Reformat function: printing all items")
+    print(all_items)
     #OUTPUT FORMAT: all_items = [(item1_info),(item7_info),(item6_info),(item8_info)]
     
     #ensuring unique items only in the list
     unique_items = list(set(all_items))
+    print(unique_items)
 
     if return_type == "ALL_PURCHASES":
         return all_purchases
@@ -287,8 +292,6 @@ def insert_data_cafe_locations_table(data, connection):
         cursor.executemany(sql_command_insert_data_into_table, unique_locations)
         connection.commit()
         cursor.close()
-
-
 
 def insert_data_into_purchase_times_table(data, connection):
     print("insert_data_into_purchase_times_table")
@@ -356,7 +359,6 @@ def insert_data_into_payments_table(data, connection):
 
         data["payment_id"] = payment_ids_list
         
-        
         cursor.close()
 
 
@@ -411,6 +413,7 @@ def insert_data_into_orders_table(data, connection):
         print("Selecting items_id for the corresponding payment_id")
         item_ids = []
         orders_info = []
+
 
         for purchase in all_purchases_with_payment_id:
             for drink_order in purchase[1]:
@@ -475,12 +478,20 @@ def insert_data_into_orders_table(data, connection):
                     payment_id = purchase[0]
                     
                     orders_info.append((payment_id,item_id))
+                
+                print("Printing orders info: list of tuples with 2 arguments")
+                print(orders_info)
+                    
         
         print("executing many")
-        sql_command_insert_data_into_table = """INSERT INTO Orders (Payment_id, Item_id) VALUES (%s, %s)"""           
+        sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES (%s, %s)"  
+        print("sql command variable")         
         cursor.executemany(sql_command_insert_data_into_table, orders_info)
+        print("excute many for inserting into orders")
         connection.commit()
+        print("connection being committed")
         cursor.close()
+        print("cursor closed")
 
 
 def insert_data_into_all_tables(data, connection):
