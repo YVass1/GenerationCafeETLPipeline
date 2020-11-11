@@ -414,8 +414,9 @@ def insert_data_into_orders_table(data, connection):
         item_ids = []
         orders_info = []
 
-
-        for purchase in all_purchases_with_payment_id:
+        for all_purchases in all_purchases_with_payment_id:
+            print(f"Length of 'all_purchases_with_payment_id' list: {len(all_purchases_with_payment_id)}")
+            print(f"Length of purchase[1] for this purchase: {len(purchase[1])}")
             for drink_order in purchase[1]:
 
                 drink_flavour_index = 1
@@ -479,8 +480,8 @@ def insert_data_into_orders_table(data, connection):
                     
                     orders_info.append((payment_id,item_id))
                 
-                print("Printing orders info: list of tuples with 2 arguments")
-                print(orders_info)
+        print("Printing orders info: list of tuples with 2 arguments")
+        print(orders_info)
                     
         
         print("executing many")
