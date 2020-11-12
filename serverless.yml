@@ -28,7 +28,7 @@ resources:
         QueueName: Team1TtoLqueue
         RedrivePolicy: 
           deadLetterTargetArn: !GetAtt team1TtoLqueueDLQ.Arn
-          maxReceiveCount: 3
+          maxReceiveCount: 4
     team1EtoTqueueDLQ:
       Type: "AWS::SQS::Queue"
       Properties:
