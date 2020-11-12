@@ -126,7 +126,7 @@ def create_database_tables(sql_code_string, connection):
 
 #####################################################################################################################
 #####################################################################################################################
-################ REFORMATTING DATA  #########################################################################
+################ REFORMATTING DATA  #################################################################################
 #####################################################################################################################
 #####################################################################################################################
 
@@ -271,21 +271,6 @@ def insert_data_cafe_locations_table(data, connection):
 
         print("Inserting data into cafe locations table")
         #inserting data into cafes locations table
-        
-        #Ongoing work for duplicates
-        # other option: 
-        #CREATE TEMP TABLE staging_table (LIKE target_table); staging table should have new data
-        #INSERT INTO staging_table;
-        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
-        #INSERT INTO target_table SELECT * FROM staging_table;
-        #         #Ongoing duplicates work:
-        #CREATE TEMP TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;
-
-        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
-        #INSERT INTO target_table SELECT * FROM staging_table;
-        #create_location_staging_table = "CREATE TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;"
-        #cursor.execute(create_location_staging_table)
-        #connection.commit()
         
         sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
         cursor.executemany(sql_command_insert_data_into_table, unique_locations)
