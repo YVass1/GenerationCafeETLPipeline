@@ -246,7 +246,7 @@ def add_hashes(dict_):
             string_to_hash += str(list_[i])
 
         hash_ = uuid.uuid3(uuid.NAMESPACE_OID, string_to_hash)
-        hashes.append(hash_)
+        hashes.append(str(hash_))
 
     dict_["hash"] = hashes
 
