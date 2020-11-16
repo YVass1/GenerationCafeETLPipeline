@@ -8,6 +8,8 @@ import logging
 import datetime 
 from dotenv import load_dotenv
 import re
+import psycopg2.extras as psy
+
 
 def start(event, context):
     print("Team One Pipeline")
@@ -208,10 +210,11 @@ def reformat_payment_info_for_sql(data):
     card_numbers = data["card_number"]
     locations = data["location"]
     datetimes = data["datetime"]
+    hashed_payment_ids = data["hash"]
 
     #reformatting data --> In the list : For each customer creating a tuple with names, payment info, location and datetime
     print("reformatting data --> In the list : For each customer creating a tuple with names, payment info, location and datetime") 
-    payments_info = list(zip(first_names, last_names, total_prices, payment_methods, card_numbers, locations, datetimes))
+    payments_info = list(zip(hashed_payment_ids, first_names, last_names, total_prices, payment_methods, card_numbers, locations, datetimes))
         
     return payments_info
 
@@ -272,8 +275,11 @@ def insert_data_cafe_locations_table(data, connection):
         print("Inserting data into cafe locations table")
         #inserting data into cafes locations table
         
-        sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
-        cursor.executemany(sql_command_insert_data_into_table, unique_locations)
+        sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES %s'
+        
+        print("Using execute_values")
+        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations)
+        print("Committing execute_values")
         connection.commit()
         cursor.close()
 
@@ -324,28 +330,9 @@ def insert_data_into_payments_table(data, connection):
 
         #inserting payment info data into payments table
         print("inserting payment info data into payments table") 
-        sql_command_insert_data_into_table = """INSERT INTO Payments (Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES (%s, %s, %s, %s, %s, %s, %s);"""
+        sql_command_insert_data_into_table = """INSERT INTO Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"""
         cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
-        connection.commit()
-        
-        #Extracting recently inserted payment ids
-        number_of_rows_inserted = len(payments_info)
-        # TODO: If another instance of `load` is running this may not be returning the IDs you are expecting
-        # ie. Not what this lambda has just inserted into instead of another instance of this lamda processing other 
-        # An answer could be generation your own ids - hashing uniqing values
-        sql_command_select_payment_ids = f'SELECT p.Payment_id FROM Payments AS p ORDER BY p.Payment_id DESC LIMIT {number_of_rows_inserted}'
-        cursor.execute(sql_command_select_payment_ids)
-
-        payment_ids_tuple_list = cursor.fetchall()
-        print("Fetching payment_ids tuple")
-        
-        payment_ids_list = []
-        for tup in payment_ids_tuple_list:
-            payment_ids_list.insert(0, tup[0]) #inserting at 0 constantly will invert the element order, since elements are grabbed in descending order from database
-        print("Extracting payment_id from tuple")
-
-        data["payment_id"] = payment_ids_list
-        
+        connection.commit()    
         cursor.close()
 
 
@@ -383,15 +370,15 @@ def insert_data_into_orders_table(data, connection):
 
         #Fetching required data to be used
   
-        payment_ids = data["payment_id"]
+        hashed_payment_ids = data["hash"]
         all_purchases = reformat_items_info_for_sql(data, "ALL_PURCHASES")
 
-        print("Grabbing payment_ids/payment_info/purchase_info")
+        print("Grabbing hashed_payment_ids/payment_info/purchase_info")
 
         #Orders table
         #Each payment id joined with purchase (which is a list)
         print("Joining payment_id with purchase_info for each purchase made")
-        all_purchases_with_payment_id = list(zip(payment_ids, convert_none_data_to_null(all_purchases)))
+        all_purchases_with_payment_id = list(zip(hashed_payment_ids, convert_none_data_to_null(all_purchases)))
         
         #Selecting items_id for the corresponding payment_id 
 
