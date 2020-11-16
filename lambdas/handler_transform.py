@@ -235,7 +235,7 @@ def card_num_format(card_num_list):
 
 
 def add_hashes(dict_):
-    entries_count = len(dict_["fname"])
+    entries_count = len(dict_["location"])
     hashes = []
     
     for i in range(entries_count):
