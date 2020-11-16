@@ -330,8 +330,8 @@ def insert_data_into_payments_table(data, connection):
 
         #inserting payment info data into payments table
         print("inserting payment info data into payments table") 
-        sql_command_insert_data_into_table = """INSERT INTO Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"""
-        cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
+        sql_command_insert_data_into_table = """INSERT INTO Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s ;"""
+        psy.execute_values(cursor, sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
         connection.commit()    
         cursor.close()
 
@@ -353,10 +353,16 @@ def insert_data_into_items_table(data, connection):
 
         #Inserting data into Items table
         print("Inserting data into Items table")
-        sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES (%s, %s, %s, %s) """
-        cursor.executemany(sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
+        sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES %s """
+        psy.execute_values(cursor, sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
         connection.commit()
         cursor.close()
+
+
+#####################################################################################################################################
+#####################################################################################################################################
+#####################################################################################################################################
+#####################################################################################################################################
 
 
 def insert_data_into_orders_table(data, connection):
@@ -458,9 +464,9 @@ def insert_data_into_orders_table(data, connection):
                     
         
         print("executing many")
-        sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES (%s, %s)"  
+        sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES %s "  
         print("sql command variable")         
-        cursor.executemany(sql_command_insert_data_into_table, orders_info)
+        psy.execute_values(cusor, sql_command_insert_data_into_table, orders_info)
         print("excute many for inserting into orders")
         connection.commit()
         print("connection being committed")
