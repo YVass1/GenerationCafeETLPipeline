@@ -44,6 +44,7 @@ def transform(dict_):
     transformed_dict["total_price"] = clean_total_prices(dict_["total_price"])
     transformed_dict["payment_method"] = dict_["payment_method"]
     transformed_dict["card_number"] = card_num_format(dict_["card_number"])
+    transformed_dict["hash"] = dict_["hash"]
 
     return transformed_dict
 
