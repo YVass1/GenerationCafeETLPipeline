@@ -296,4 +296,4 @@ def debug_prints(dict_):
     print()
     print("To check invalid card numbers are correctly set to None, the following two numbers should be equal:")
     print("total locations: " + str(len(dict_["location"])))
-    print("total card nunmbers: " + str(len(dict_["card_number"])))
+    print("total card numbers: " + str(len(dict_["card_number"])))
