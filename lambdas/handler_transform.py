@@ -44,6 +44,7 @@ def transform(dict_):
     transformed_dict["total_price"] = clean_total_prices(dict_["total_price"])
     transformed_dict["payment_method"] = dict_["payment_method"]
     transformed_dict["card_number"] = card_num_format(dict_["card_number"])
+    transformed_dict["hash"] = dict_["hash"]
 
     return transformed_dict
 
@@ -245,7 +246,7 @@ def add_hashes(dict_):
             string_to_hash += str(list_[i])
 
         hash_ = uuid.uuid3(uuid.NAMESPACE_OID, string_to_hash)
-        hashes.append(hash_)
+        hashes.append(str(hash_))
 
     dict_["hash"] = hashes
 

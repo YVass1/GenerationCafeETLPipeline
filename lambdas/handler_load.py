@@ -310,7 +310,7 @@ def insert_data_into_purchase_times_table(data, connection):
 
         #inserting unique full_datetimes_info into table Purchase_times table
         print("inserting unique datetimes_info into table Purchase_times")
-        sql_command_insert_data_into_table = """INSERT INTO Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s) """
+        sql_command_insert_data_into_table = """INSERT INTO Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s """
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_full_datetimes_info)
         connection.commit()
         cursor.close()
