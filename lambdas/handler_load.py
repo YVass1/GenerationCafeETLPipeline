@@ -126,7 +126,7 @@ def create_database_tables(sql_code_string, connection):
 
 #####################################################################################################################
 #####################################################################################################################
-################ REFORMATTING DATA  #########################################################################
+################ REFORMATTING DATA  #################################################################################
 #####################################################################################################################
 #####################################################################################################################
 
@@ -272,21 +272,6 @@ def insert_data_cafe_locations_table(data, connection):
         print("Inserting data into cafe locations table")
         #inserting data into cafes locations table
         
-        #Ongoing work for duplicates
-        # other option: 
-        #CREATE TEMP TABLE staging_table (LIKE target_table); staging table should have new data
-        #INSERT INTO staging_table;
-        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
-        #INSERT INTO target_table SELECT * FROM staging_table;
-        #         #Ongoing duplicates work:
-        #CREATE TEMP TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;
-
-        #DELETE FROM staging_table USING target_table WHERE staging_table.Cafe_locations = target_table.Cafe_locations;
-        #INSERT INTO target_table SELECT * FROM staging_table;
-        #create_location_staging_table = "CREATE TABLE Staging_Cafe_locations AS SELECT * FROM Cafe_locations;"
-        #cursor.execute(create_location_staging_table)
-        #connection.commit()
-        
         sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES (%s)'
         cursor.executemany(sql_command_insert_data_into_table, unique_locations)
         connection.commit()
@@ -345,6 +330,9 @@ def insert_data_into_payments_table(data, connection):
         
         #Extracting recently inserted payment ids
         number_of_rows_inserted = len(payments_info)
+        # TODO: If another instance of `load` is running this may not be returning the IDs you are expecting
+        # ie. Not what this lambda has just inserted into instead of another instance of this lamda processing other 
+        # An answer could be generation your own ids - hashing uniqing values
         sql_command_select_payment_ids = f'SELECT p.Payment_id FROM Payments AS p ORDER BY p.Payment_id DESC LIMIT {number_of_rows_inserted}'
         cursor.execute(sql_command_select_payment_ids)
 
@@ -411,8 +399,13 @@ def insert_data_into_orders_table(data, connection):
         orders_info = []
 
         for purchase in all_purchases_with_payment_id:
-            print(f"Length of 'all_purchases_with_payment_id' list: {len(all_purchases_with_payment_id)}")
-            print(f"Length of purchase[1] for this purchase: {len(purchase[1])}")
+            # TODO: We are currently grabbing menu item IDs from the table one by one for each drink in each order (eg. 400 * 2?)
+            # 1. Given then that items are menu items is the table expected to grow beyond a size where pulling the IDs for the whole table
+            # will impact perforance? If not, we could grab the whole table in one go here and then match drinks to IDs in python
+            # One downside is you need the whole table to match properties to drinks.
+            # 2. Would calculating menu item ids upfront instead of auto increment also work here - only an option as you may go this route
+            # for payment_ids?
+
             for drink_order in purchase[1]:
 
                 drink_flavour_index = 1
@@ -475,9 +468,6 @@ def insert_data_into_orders_table(data, connection):
                     payment_id = purchase[0]
                     
                     orders_info.append((payment_id,item_id))
-                
-        print("Printing orders info: list of tuples with 2 arguments")
-        print(orders_info)
                     
         
         print("executing many")
