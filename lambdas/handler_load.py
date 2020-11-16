@@ -330,6 +330,9 @@ def insert_data_into_payments_table(data, connection):
         
         #Extracting recently inserted payment ids
         number_of_rows_inserted = len(payments_info)
+        # TODO: If another instance of `load` is running this may not be returning the IDs you are expecting
+        # ie. Not what this lambda has just inserted into instead of another instance of this lamda processing other 
+        # An answer could be generation your own ids - hashing uniqing values
         sql_command_select_payment_ids = f'SELECT p.Payment_id FROM Payments AS p ORDER BY p.Payment_id DESC LIMIT {number_of_rows_inserted}'
         cursor.execute(sql_command_select_payment_ids)
 
@@ -396,6 +399,13 @@ def insert_data_into_orders_table(data, connection):
         orders_info = []
 
         for purchase in all_purchases_with_payment_id:
+            # TODO: We are currently grabbing menu item IDs from the table one by one for each drink in each order (eg. 400 * 2?)
+            # 1. Given then that items are menu items is the table expected to grow beyond a size where pulling the IDs for the whole table
+            # will impact perforance? If not, we could grab the whole table in one go here and then match drinks to IDs in python
+            # One downside is you need the whole table to match properties to drinks.
+            # 2. Would calculating menu item ids upfront instead of auto increment also work here - only an option as you may go this route
+            # for payment_ids?
+
             for drink_order in purchase[1]:
 
                 drink_flavour_index = 1
