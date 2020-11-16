@@ -2,6 +2,7 @@ import psycopg2
 import logging
 import json
 import boto3
+import uuid
 from dotenv import load_dotenv
 import os
 
@@ -15,7 +16,8 @@ def start(event, context):
 
     extracted_json = get_json_from_queue(event)
     extracted_dict = convert_json_to_dict(extracted_json)
-    transformed_dict = transform(extracted_dict)
+    dict_with_hashes = add_hashes(extracted_dict)
+    transformed_dict = transform(dict_with_hashes)
     json_dict = json_serialize_dict(transformed_dict)
     send_json_to_queue(json_dict, TTOLQUEUE_URL)
     debug_prints(transformed_dict)
@@ -232,6 +234,24 @@ def card_num_format(card_num_list):
     return starred_numbers
 
 
+def add_hashes(dict_):
+    entries_count = len(dict_["fname"])
+    hashes = []
+    
+    for i in range(entries_count):
+        string_to_hash = ""
+
+        for list_ in dict_.values():
+            string_to_hash += str(list_[i])
+
+        hash_ = uuid.uuid3(uuid.NAMESPACE_OID, string_to_hash)
+        hashes.append(hash_)
+
+    dict_["hash"] = hashes
+
+    return dict_
+
+
 def debug_prints(dict_):
     print("Dates of first 10 orders:")
     print(dict_["datetime"][:10])
@@ -253,6 +273,9 @@ def debug_prints(dict_):
 
     print("Card Numbers of first 10 orders:")
     print(dict_["card_number"][:10])
+
+    print("Hashes of first 10 orders:")
+    print(dict_["hash"][:10])
 
     print("FIRST 10 PURCHASE INFOS")
     for purchase in dict_["purchase"][:10]:
