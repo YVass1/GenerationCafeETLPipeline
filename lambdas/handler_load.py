@@ -274,12 +274,29 @@ def insert_data_cafe_locations_table(data, connection):
 
         print("Inserting data into cafe locations table")
         #inserting data into cafes locations table
-        
-        sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES %s'
-        
-        print("Using execute_values")
-        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations)
-        print("Committing execute_values")
+
+        print("Creating locations table copy")
+        create_locations_table_copy_sql_command = "CREATE TABLE Copy_cafe_locations AS SELECT * FROM Cafe_locations; TRUNCATE TABLE Cafe_locations;"
+        cursor.execute(create_locations_table_copy_sql_command)
+        cursor.commit()
+        print("Committing cursor1")
+
+        print("inserting data into locations table copy")
+        insert_new_data_into_copy_table =  "INSERT INTO Copy_cafe_locations (Location_name) VALUES %s;"
+        psy.execute_values(cursor,insert_new_data_into_copy_table, unique_locations )
+        cursor.commit()
+        print("Committing cursor2")
+
+        print("selecting distinct rows into target locations table")
+        check_loc_duplicates_sql_command = "INSERT INTO Cafe_locations SELECT DISTINCT * FROM Copy_cafe_locations; DROP TABLE Copy_cafe_locations;"
+        cursor.execute(check_loc_duplicates_sql_command)
+        cursor.commit()
+        print("Committing cursor3")
+            
+        #sql_command_insert_data_into_table = 'INSERT INTO Cafe_locations (Location_name) VALUES %s'
+        # print("Using execute_values")
+        # psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations)
+        # print("Committing execute_values")
         connection.commit()
         cursor.close()
 
