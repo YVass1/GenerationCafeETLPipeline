@@ -466,7 +466,7 @@ def insert_data_into_orders_table(data, connection):
         print("executing many")
         sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES %s "  
         print("sql command variable")         
-        psy.execute_values(cusor, sql_command_insert_data_into_table, orders_info)
+        psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
         print("excute many for inserting into orders")
         connection.commit()
         print("connection being committed")
