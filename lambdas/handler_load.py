@@ -281,7 +281,7 @@ def insert_data_cafe_locations_table(data, connection):
         # connection.commit()
         # print("Committing cursor1")
 
-        # print("inserting data into locations table staging")
+        print("inserting data into locations table staging")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations)
@@ -297,7 +297,6 @@ def insert_data_cafe_locations_table(data, connection):
         cursor.execute(sql_command_insert_unique_data)
         connection.commit()
         cursor.close()
-          
 
 
 def insert_data_into_purchase_times_table(data, connection):
@@ -325,17 +324,26 @@ def insert_data_into_purchase_times_table(data, connection):
         print("List of only unique datetimes_info")
         unique_full_datetimes_info =  list(set(full_datetimes_info))
 
-        #inserting unique full_datetimes_info into table Purchase_times table
-        print("inserting unique datetimes_info into table Purchase_times")
-        
-        sql_command_insert_data_into_table = """INSERT INTO Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s """
+        print("inserting data into staging table for purchase_times")
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s'
+        print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_full_datetimes_info)
+        print("Committing execute_values")
+        
+        sql_command_insert_unique_data = """
+        INSERT INTO Purchase_times
+        (SELECT
+            FROM Staging_Purchase_times
+            LEFT OUTER JOIN Purchase_times 
+            ON Purchase_times.Datetime = Staging_Purchase_times.Datetime
+            WHERE Purchase_times.Datetime IS NULL);
+        """
+        cursor.execute(sql_command_insert_unique_data)
         connection.commit()
         cursor.close()
 
 def insert_data_into_payments_table(data, connection):
     print("insert_data_into_payments_tables")
-    """Inserts data into payments table"""
 
     with connection.cursor() as cursor:
         print("got cursor")
@@ -346,7 +354,27 @@ def insert_data_into_payments_table(data, connection):
         payments_info = reformat_payment_info_for_sql(data)
         print("Grabbing payment info")
 
-        #inserting payment info data into payments table
+        #inserting payment info data into staging payments table
+        print("inserting data into staging table for Payments")
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Payments (Location_name) VALUES %s'
+        print("Using execute_values")
+        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_full_datetimes_info)
+        print("Committing execute_values")
+        
+        sql_command_insert_unique_data = """
+        INSERT INTO Purchase_times
+        (SELECT Datetime, Day, Month, Year, Time,
+            FROM Staging_Purchase_times
+            LEFT OUTER JOIN Purchase_times 
+            ON Purchase_times.Datetime = Staging_Purchase_times.Datetime
+            WHERE Purchase_times.Datetime IS NULL);
+        """
+        cursor.execute(sql_command_insert_unique_data)
+        connection.commit()
+        cursor.close()
+        
+        
+        
         print("inserting payment info data into payments table") 
         sql_command_insert_data_into_table = """INSERT INTO Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s ;"""
         psy.execute_values(cursor, sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
