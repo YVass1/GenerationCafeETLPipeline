@@ -14,18 +14,27 @@ def start(event, context):
 
     TTOLQUEUE_URL = os.getenv("TTOLQUEUE_URL")
 
-    extracted_json = get_json_from_queue(event)
-    extracted_dict = convert_json_to_dict(extracted_json)
-    dict_with_hashes = add_hashes(extracted_dict)
-    transformed_dict = transform(dict_with_hashes)
-    json_dict = json_serialize_dict(transformed_dict)
-    send_json_to_queue(json_dict, TTOLQUEUE_URL)
-    debug_prints(transformed_dict)
-    return transformed_dict
+    extracted_json_list = get_json_from_queue(event)
+
+    transformed_dict_list= []
+    for extracted_json in extracted_json_list:
+        transformed_dict_list= []
+        extracted_dict = convert_json_to_dict(extracted_json)
+        dict_with_hashes = add_hashes(extracted_dict)
+        transformed_dict = transform(dict_with_hashes)
+        json_dict = json_serialize_dict(transformed_dict)
+        send_json_to_queue(json_dict, TTOLQUEUE_URL)
+        debug_prints(transformed_dict)
+        transformed_dict_list.append(transformed_dict)
+
+    return transformed_dict_list
 
 
 def get_json_from_queue(event):
-    return event["Records"][0]["body"]
+    records_list =[]
+    for record in event["Records"]:
+        records_list.append(record["body"]) 
+    return records_list
 
 
 def convert_json_to_dict(json_to_convert):
