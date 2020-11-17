@@ -10,27 +10,37 @@ def start(event, context):
     print("Team One Pipeline")
 
     load_dotenv()
-    BUCKET_NAME = os.getenv("BUCKET_NAME")
+    RAW_DATA_BUCKET_NAME = os.getenv("RAW_DATA_BUCKET_NAME")
+    PAYLOAD_BUCKET_NAME = os.getenv("PAYLOAD_BUCKET_NAME")
     ETOTQUEUE_URL = os.getenv("ETOTQUEUE_URL")
-    
+     
     logging.getLogger().setLevel(0)
     
-    file_to_extract = get_key_to_extract(event)
+    file_to_extract_list, arn_list = get_keys_to_extract(event)
 
-    if file_to_extract == None:
-        return None
+    extracted_dict_list = []
+    for file_to_extract in file_to_extract_list:
+        if file_to_extract == None:
+            return None
 
-    extracted_dict = extract(BUCKET_NAME, file_to_extract)
-    json_dict = json_serialize_dict(extracted_dict)
-    send_json_to_queue(json_dict, ETOTQUEUE_URL)
+        extracted_dict = extract(RAW_DATA_BUCKET_NAME, file_to_extract)
+        json_dict = json_serialize_dict(extracted_dict)
+        send_json_to_s3(json_dict, PAYLOAD_BUCKET_NAME)
+        send_file_ref_to_queue(file_ref, ETOTQUEUE_URL)
+        debug_prints(extracted_dict)
+        extracted_dict_list.append(extracted_dict)
 
-    debug_prints(extracted_dict)
-    return extracted_dict
+    return extracted_dict_list
 
 
-def get_key_to_extract(event):
-    #TODO: not necessarily a 0-index, foreach instead
-    return event["Records"][0]["s3"]["object"]["key"]
+def get_keys_to_extract(event):
+    records_list = []
+    arn_list = []
+    for record in event["Records"]:
+        records_list.append(record["s3"]["object"]["key"])
+        arn_list.append(record["s3"]["object"]["key"][])
+
+    return records_list, arn_list
 
 
 def json_serialize_dict(dict_):
@@ -39,7 +49,14 @@ def json_serialize_dict(dict_):
     return json_dict
 
 
-def send_json_to_queue(json_dict, queue_url):
+def send_json_to_s3(json_dict, bucket_name):
+    s3 = boto3.client('s3')
+    s3.Object(bucket_name, json)
+    key = s3.key.Key(bucket_name, json_dict)
+
+
+
+def send_file_ref_to_queue(file_ref, queue_url):
     sqs = boto3.client('sqs')
 
     # Send message to SQS queue
@@ -52,7 +69,7 @@ def send_json_to_queue(json_dict, queue_url):
                 'StringValue': 'Hello World'
             },
         },
-        MessageBody = json_dict
+        MessageBody = file_ref
     )
 
     print(response['MessageId'])
