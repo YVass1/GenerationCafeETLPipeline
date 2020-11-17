@@ -12,14 +12,16 @@ def start(event, context):
     load_dotenv()
     logging.getLogger().setLevel(0)
 
+    PAYLOAD_BUCKET_NAME = os.getenv("PAYLOAD_BUCKET_NAME")
     TTOLQUEUE_URL = os.getenv("TTOLQUEUE_URL")
 
-    extracted_json_list = get_json_from_queue(event)
+    file_reference_list = get_json_from_queue(event)
 
-    transformed_dict_list= []
-    for extracted_json in extracted_json_list:
-        transformed_dict_list= []
-        extracted_dict = convert_json_to_dict(extracted_json)
+    transformed_dict_list = []
+
+    for file_ref in file_reference_list:
+
+        extracted_dict = convert_json_to_dict(file_ref, PAYLOAD_BUCKET_NAME)
         dict_with_hashes = add_hashes(extracted_dict)
         transformed_dict = transform(dict_with_hashes)
         json_dict = json_serialize_dict(transformed_dict)
@@ -31,14 +33,22 @@ def start(event, context):
 
 
 def get_json_from_queue(event):
-    records_list =[]
+    records_list = []
+
     for record in event["Records"]:
         records_list.append(record["body"]) 
+
     return records_list
 
 
-def convert_json_to_dict(json_to_convert):
-    generated_dict = json.loads(json_to_convert)
+def convert_json_to_dict(file_ref, bucket_name):
+    s3 = boto3.client('s3')
+
+    s3_raw_cafe_data = s3.get_object(Bucket = bucket_name, Key = file_ref)
+
+    data = s3_raw_cafe_data['Body'].read().decode('utf-8')
+   
+    generated_dict = json.loads(data)
     print(generated_dict)
     return generated_dict
 
