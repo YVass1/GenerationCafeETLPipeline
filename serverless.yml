@@ -54,7 +54,8 @@ functions:
           existing: true
     environment:
       ETOTQUEUE_URL: !Ref team1EtoTqueue
-      BUCKET_NAME: cafe-data-data-pump-dev-team-1
+      RAW_DATA_BUCKET_NAME: cafe-data-data-pump-dev-team-1
+      PAYLOAD_BUCKET_NAME: team-1-large-payload-bucket
   handler-transform:
     runtime: python3.8
     handler: handler_transform.start
