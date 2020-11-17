@@ -535,16 +535,37 @@ def insert_data_into_orders_table(data, connection):
                     
                     orders_info.append((payment_id,item_id))
                     
-        
-        print("executing many")
-        sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES %s "  
-        print("sql command variable")         
+        print("inserting data into staging table for Orders")
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Item_id, Payment_id) VALUES %s'
+        print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
-        print("excute many for inserting into orders")
+        
+        sql_command_insert_unique_data = """
+        INSERT INTO Orders (Item_id, Payment_id)
+        (SELECT SO.Item_id, SO.Payment_id
+            FROM Staging_Orders AS SO
+            LEFT OUTER JOIN Orders AS O
+            ON O.Payment_id = SO.Payment_id
+            AND ON O.Item_id = SO.Item_id
+            WHERE O.Item_id IS NULL
+            AND O.Payment_id IS NULL);
+        """
+        print("Executing inserting unique rows from staging table")
+        cursor.execute(sql_command_insert_unique_data)
         connection.commit()
-        print("connection being committed")
         cursor.close()
-        print("cursor closed")
+
+
+
+        # print("executing many")
+        # sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES %s "  
+        # print("sql command variable")         
+        # psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
+        # print("excute many for inserting into orders")
+        # connection.commit()
+        # print("connection being committed")
+        # cursor.close()
+        # print("cursor closed")
 
 
 def insert_data_into_all_tables(data, connection):
