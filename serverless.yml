@@ -67,6 +67,7 @@ functions:
               - team1EtoTqueue
               - Arn
     environment:
+      PAYLOAD_BUCKET_NAME: team-1-large-payload-bucket
       TTOLQUEUE_URL: !Ref team1TtoLqueue
   handler-load:
     runtime: python3.8
