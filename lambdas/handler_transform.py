@@ -25,7 +25,8 @@ def start(event, context):
         dict_with_hashes = add_hashes(extracted_dict)
         transformed_dict = transform(dict_with_hashes)
         json_dict = json_serialize_dict(transformed_dict)
-        send_json_to_queue(json_dict, TTOLQUEUE_URL)
+        new_file_ref = send_json_to_s3(json_dict, PAYLOAD_BUCKET_NAME, file_ref)
+        send_file_ref_to_queue(file_ref, TTOLQUEUE_URL)
         debug_prints(transformed_dict)
         transformed_dict_list.append(transformed_dict)
 
@@ -53,6 +54,17 @@ def convert_json_to_dict(file_ref, bucket_name):
     return generated_dict
 
 
+def send_json_to_s3(json_dict, bucket_name, filename):
+    s3 = boto3.client('s3')
+
+    new_file_key = filename + "_transformed_json"
+    new_file = s3.Object(bucket_name, new_file_key)
+
+    new_file.put(Body = json_dict, CacheControl = "no-cache")
+
+    return new_file_key
+
+
 def transform(dict_):
     transformed_dict = {}
 
@@ -74,7 +86,7 @@ def json_serialize_dict(dict_):
     return json_dict
 
 
-def send_json_to_queue(json_dict, queue_url):
+def send_file_ref_to_queue(file_ref, queue_url):
     sqs = boto3.client('sqs')
 
     # Send message to SQS queue
@@ -87,7 +99,7 @@ def send_json_to_queue(json_dict, queue_url):
                 'StringValue': 'Hello World'
             },
         },
-        MessageBody = json_dict
+        MessageBody = file_ref
     )
 
     print(response['MessageId'])
