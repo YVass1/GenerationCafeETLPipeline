@@ -6,6 +6,7 @@ import boto3
 import json
 import logging
 
+
 def start(event, context):
     print("Team One Pipeline")
 
@@ -16,16 +17,17 @@ def start(event, context):
      
     logging.getLogger().setLevel(0)
     
-    file_to_extract_list, arn_list = get_keys_to_extract(event)
+    file_to_extract_list = get_keys_to_extract(event)
 
     extracted_dict_list = []
-    for file_to_extract in file_to_extract_list:
-        if file_to_extract == None:
+
+    for file_ in file_to_extract_list:
+        if file_ == None:
             return None
 
-        extracted_dict = extract(RAW_DATA_BUCKET_NAME, file_to_extract)
+        extracted_dict = extract(RAW_DATA_BUCKET_NAME, file_)
         json_dict = json_serialize_dict(extracted_dict)
-        send_json_to_s3(json_dict, PAYLOAD_BUCKET_NAME)
+        file_ref = send_json_to_s3(json_dict, PAYLOAD_BUCKET_NAME, file_)
         send_file_ref_to_queue(file_ref, ETOTQUEUE_URL)
         debug_prints(extracted_dict)
         extracted_dict_list.append(extracted_dict)
@@ -34,13 +36,11 @@ def start(event, context):
 
 
 def get_keys_to_extract(event):
-    records_list = []
-    arn_list = []
+    keys_list = []
     for record in event["Records"]:
-        records_list.append(record["s3"]["object"]["key"])
-        arn_list.append(record["s3"]["object"]["key"][])
+        keys_list.append(record["s3"]["object"]["key"])
 
-    return records_list, arn_list
+    return keys_list
 
 
 def json_serialize_dict(dict_):
@@ -49,11 +49,15 @@ def json_serialize_dict(dict_):
     return json_dict
 
 
-def send_json_to_s3(json_dict, bucket_name):
+def send_json_to_s3(json_dict, bucket_name, filename):
     s3 = boto3.client('s3')
-    s3.Object(bucket_name, json)
-    key = s3.key.Key(bucket_name, json_dict)
 
+    new_file_key = filename + "_extracted_json"
+    new_file = s3.Object(bucket_name, new_file_key)
+
+    new_file.put(Body = json_dict, CacheControl = "no-cache")
+
+    return new_file_key
 
 
 def send_file_ref_to_queue(file_ref, queue_url):
