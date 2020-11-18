@@ -362,7 +362,7 @@ def insert_data_into_purchase_times_table(data, connection):
         (SELECT SPT.Datetime, SPT.Day, SPT.Month, SPT.Year, SPT.Time
             FROM Staging_Purchase_times AS SPT
             LEFT OUTER JOIN Purchase_times 
-            ON Purchase_times.Datetime = Staging_Purchase_times.Datetime
+            ON Purchase_times.Datetime = SPT.Datetime
             WHERE Purchase_times.Datetime IS NULL);
         """
         print("Executing inserting unique rows from staging table")
