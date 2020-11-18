@@ -15,6 +15,7 @@ def start(event, context):
     print("Team One Pipeline")
     
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
+    PAYLOAD_BUCKET_NAME = "team-1-large-payload-bucket"
     SQL_TEXTFILE_KEY_NAME = "tables_creation_sql_code.txt"
 
     sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
@@ -26,20 +27,36 @@ def start(event, context):
     print(event)
     print(context)
 
-    transformed_json = get_json_from_queue(event)
-    transformed_dict = convert_json_to_dict(transformed_json)
+    file_ref_list = get_json_from_queue(event)
+    dict_list = get_dicts_from_file_refs(file_ref_list, PAYLOAD_BUCKET_NAME)
+    transformed_dict = combine_dicts(dict_list)
 
     load(transformed_dict, conn, sql_code)
     
 
 def get_json_from_queue(event):
-    return event["Records"][0]["body"]
+    records_list = []
+
+    for record in event["Records"]:
+        records_list.append(record["body"]) 
+
+    return records_list
 
 
-def convert_json_to_dict(json_to_convert):
-    generated_dict = json.loads(json_to_convert)
-    print(generated_dict)
-    return generated_dict
+def get_dicts_from_file_refs(file_refs, bucket_name):
+    dict_list = []
+
+    for file_ref in file_refs:
+        s3 = boto3.client('s3')
+
+        s3_raw_cafe_data = s3.get_object(Bucket = bucket_name, Key = file_ref)
+
+        data = s3_raw_cafe_data['Body'].read().decode('utf-8')
+    
+        generated_dict = json.loads(data)
+        dict_list.append(generated_dict)
+    
+    return dict_list
 
 
 def redshift_connect():
@@ -86,16 +103,27 @@ def read_from_s3(bucket, sql_txtfile_key):
     s3 = boto3.client('s3')
 
     s3_sql_code = s3.get_object(Bucket = bucket, Key = sql_txtfile_key)
-
     sql_code = s3_sql_code['Body'].read().decode('utf-8')
 
     return (sql_code)
 
 
-def load(cleaned_data, connection, sql_code_txtfile):
-    
-    create_database_tables(sql_code_txtfile, connection)
+def combine_dicts(dict_list):
+    keys = list(dict_list[0].keys())
+    combined_dict = {}
 
+    for key in keys:
+        combined_dict[key] = []
+
+    for dict_ in dict_list:
+        for key, list_ in dict_.items():
+            combined_dict[key] += list_
+    
+    return combined_dict
+
+
+def load(cleaned_data, connection, sql_code_txtfile):
+    create_database_tables(sql_code_txtfile, connection)
     insert_data_into_all_tables(cleaned_data, connection)
 
 
