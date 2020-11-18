@@ -31,7 +31,9 @@ def start(event, context):
 
     for transformed_json in transformed_jsons:
         transformed_dict = convert_json_to_dict(transformed_json)
-        transformed_dicts.append(transformed_dicts)
+        print("type of transformed_dict returned by conversion:")
+        print(type(transformed_dict))
+        transformed_dicts.append(transformed_dict)
     
     combined_dict = combine_dicts(transformed_dicts)
     load(combined_dict, conn, sql_code)
@@ -102,7 +104,12 @@ def read_from_s3(bucket, sql_txtfile_key):
 
 
 def combine_dicts(dict_list):
-    keys = list(dict_list[0].keys())
+    print("data type of dict_list coming in to combine_dicts():")
+    print(type(dict_list))
+    print("data type of dict_list[0] coming in to combine_dicts():")
+    print(type(dict_list[0]))
+    
+    keys = dict_list[0].keys()
     combined_dict = {}
 
     for key in keys:
