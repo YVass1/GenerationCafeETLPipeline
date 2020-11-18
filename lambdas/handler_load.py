@@ -15,7 +15,6 @@ def start(event, context):
     print("Team One Pipeline")
     
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    PAYLOAD_BUCKET_NAME = "team-1-large-payload-bucket"
     SQL_TEXTFILE_KEY_NAME = "tables_creation_sql_code.txt"
 
     sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
