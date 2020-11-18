@@ -52,7 +52,7 @@ def json_serialize_dict(dict_):
 def send_json_to_s3(json_dict, bucket_name, filename):
     s3 = boto3.client('s3')
 
-    new_file_key = filename + "_extracted_json"
+    new_file_key = filename + "_extracted.json"
     new_file = s3.Object(bucket_name, new_file_key)
 
     new_file.put(Body = json_dict, CacheControl = "no-cache")
