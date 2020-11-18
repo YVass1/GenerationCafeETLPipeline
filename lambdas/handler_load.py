@@ -15,7 +15,6 @@ def start(event, context):
     print("Team One Pipeline")
     
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    PAYLOAD_BUCKET_NAME = "team-1-large-payload-bucket"
     SQL_TEXTFILE_KEY_NAME = "tables_creation_sql_code.txt"
 
     sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
@@ -27,11 +26,15 @@ def start(event, context):
     print(event)
     print(context)
 
-    file_ref_list = get_json_from_queue(event)
-    dict_list = get_dicts_from_file_refs(file_ref_list, PAYLOAD_BUCKET_NAME)
-    transformed_dict = combine_dicts(dict_list)
+    transformed_jsons = get_json_from_queue(event)
+    transformed_dicts = []
 
-    load(transformed_dict, conn, sql_code)
+    for transformed_json in transformed_jsons:
+        transformed_dict = convert_json_to_dict(transformed_json)
+        transformed_dicts.append(transformed_dicts)
+    
+    combined_dict = combine_dicts(transformed_dicts)
+    load(combined_dict, conn, sql_code)
     
 
 def get_json_from_queue(event):
@@ -43,20 +46,10 @@ def get_json_from_queue(event):
     return records_list
 
 
-def get_dicts_from_file_refs(file_refs, bucket_name):
-    dict_list = []
-
-    for file_ref in file_refs:
-        s3 = boto3.client('s3')
-
-        s3_raw_cafe_data = s3.get_object(Bucket = bucket_name, Key = file_ref)
-
-        data = s3_raw_cafe_data['Body'].read().decode('utf-8')
-    
-        generated_dict = json.loads(data)
-        dict_list.append(generated_dict)
-    
-    return dict_list
+def convert_json_to_dict(json_to_convert):
+    generated_dict = json.loads(json_to_convert)
+    print(generated_dict)
+    return generated_dict
 
 
 def redshift_connect():
