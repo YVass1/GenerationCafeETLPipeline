@@ -12,7 +12,6 @@ def start(event, context):
 
     load_dotenv()
     RAW_DATA_BUCKET_NAME = os.getenv("RAW_DATA_BUCKET_NAME")
-    PAYLOAD_BUCKET_NAME = os.getenv("PAYLOAD_BUCKET_NAME")
     ETOTQUEUE_URL = os.getenv("ETOTQUEUE_URL")
      
     logging.getLogger().setLevel(0)
@@ -26,11 +25,13 @@ def start(event, context):
             return None
 
         extracted_dict = extract(RAW_DATA_BUCKET_NAME, file_)
-        json_dict = json_serialize_dict(extracted_dict)
-        file_ref = send_json_to_s3(json_dict, PAYLOAD_BUCKET_NAME, file_)
-        send_file_ref_to_queue(file_ref, ETOTQUEUE_URL)
-        debug_prints(extracted_dict)
-        extracted_dict_list.append(extracted_dict)
+        extracted_dicts = split_dict(extracted_dict)
+
+        for dict_ in extracted_dicts:
+            json_dict = json_serialize_dict(dict_)
+            send_json_to_queue(json_dict, ETOTQUEUE_URL)
+            debug_prints(dict_)
+            extracted_dict_list.append(dict_)
 
     return extracted_dict_list
 
@@ -49,16 +50,7 @@ def json_serialize_dict(dict_):
     return json_dict
 
 
-def send_json_to_s3(json_dict, bucket_name, filename):
-    s3 = boto3.client('s3')
-
-    new_file_key = filename.replace(".csv", "") + "_extracted.json"
-    s3.Bucket(bucket_name).put_object(Key = new_file_key, Body = json_dict)
-
-    return new_file_key
-
-
-def send_file_ref_to_queue(file_ref, queue_url):
+def send_json_to_queue(dict_, queue_url):
     sqs = boto3.client('sqs')
 
     # Send message to SQS queue
@@ -71,10 +63,33 @@ def send_file_ref_to_queue(file_ref, queue_url):
                 'StringValue': 'Hello World'
             },
         },
-        MessageBody = file_ref
+        MessageBody = dict_
     )
 
     print(response['MessageId'])
+
+
+def split_dict(dict_):
+    MAX_DICT_SIZE = 400
+    
+    keys = list(dict_.keys())
+    small_dict_list = []
+
+    while len(dict_["datetime"]) > MAX_DICT_SIZE:
+        small_dict = {}
+
+        for key in keys:
+            small_dict[key] = []
+
+        for key, list_ in dict_.items():
+            small_dict[key] = list_[:MAX_DICT_SIZE]
+            dict_[key] = dict_[key][MAX_DICT_SIZE:]
+        
+        small_dict_list.append(small_dict)
+    
+    small_dict_list.append(dict_)
+    
+    return small_dict_list
 
 
 def extract(bucket_name, cafe_csv_key_name):
