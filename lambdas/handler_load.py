@@ -433,7 +433,7 @@ def insert_data_into_items_table(data, connection):
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_items)
         
         sql_command_insert_unique_data = """
-        INSERT INTO Items
+        INSERT INTO Items (Price, Drink_type, Drink_flavour, Drink_size)
         (SELECT SI.Price, SI.Drink_type, SI.Drink_flavour, SI.Drink_size
             FROM Staging_Items AS SI
             LEFT OUTER JOIN Items AS I
