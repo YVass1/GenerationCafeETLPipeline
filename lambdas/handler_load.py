@@ -309,6 +309,9 @@ def insert_data_cafe_locations_table(data, connection):
         # connection.commit()
         # print("Committing cursor1")
 
+        print("Truncating locations staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Cafe_locations"
+        cursor.execute(sql_command_truncate_table)
         print("inserting data into locations table staging")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s'
         print("Using execute_values")
@@ -352,6 +355,9 @@ def insert_data_into_purchase_times_table(data, connection):
         print("List of only unique datetimes_info")
         unique_full_datetimes_info =  list(set(full_datetimes_info))
 
+        print("Truncating Purchase_times staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Purchase_times"
+        cursor.execute(sql_command_truncate_table)
         print("inserting data into staging table for purchase_times")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s'
         print("Using execute_values")
@@ -384,6 +390,9 @@ def insert_data_into_payments_table(data, connection):
         print("Grabbing payment info")
 
         #inserting payment info data into staging payments table
+        print("Truncating Staging_Payments staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Payments"
+        cursor.execute(sql_command_truncate_table)        
         print("inserting data into staging table for Payments")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s'
         print("Using execute_values")
@@ -427,6 +436,9 @@ def insert_data_into_items_table(data, connection):
 
         
         #Inserting data into Staging Items table
+        print("Truncating Staging_Items staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Items"
+        cursor.execute(sql_command_truncate_table) 
         print("inserting data into staging table for Items")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Drink_type, Drink_flavour, Drink_size, Price) VALUES %s'
         print("Using execute_values")
@@ -562,7 +574,10 @@ def insert_data_into_orders_table(data, connection):
                     payment_id = purchase[0]
                     
                     orders_info.append((payment_id,item_id))
-                    
+
+        print("Truncating Staging_Orders staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
+        cursor.execute(sql_command_truncate_table)            
         print("inserting data into staging table for Orders")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Payment_id, Item_id) VALUES %s'
         print("Using execute_values")
@@ -584,18 +599,6 @@ def insert_data_into_orders_table(data, connection):
         cursor.close()
 
 
-
-        # print("executing many")
-        # sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES %s "  
-        # print("sql command variable")         
-        # psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
-        # print("excute many for inserting into orders")
-        # connection.commit()
-        # print("connection being committed")
-        # cursor.close()
-        # print("cursor closed")
-
-
 def insert_data_into_all_tables(data, connection):
     print("insert_data_into_all_tables")
     """Inserts data into various database tables"""
@@ -605,6 +608,7 @@ def insert_data_into_all_tables(data, connection):
         insert_data_into_payments_table(data, connection)
         insert_data_into_items_table(data,connection)
         insert_data_into_orders_table(data,connection)
+        print("insert_data_into_all_tables success")
     except Exception as e:
         print("insert_data_into_all_tables failure")
         print(e)
