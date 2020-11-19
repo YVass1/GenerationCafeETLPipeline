@@ -530,8 +530,8 @@ def insert_data_into_orders_table(data, connection):
                     print(drink_order_list)
                     
                     cursor.execute("""SELECT i.Item_id FROM  
-                    Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour IS NULL
-                    AND Drink_size IS NULL AND i.Price = %s""", drink_order_list)
+                    Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
+                    AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
                     print("sql worked for selected id")
                     
@@ -548,7 +548,7 @@ def insert_data_into_orders_table(data, connection):
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
-                    AND Drink_size = %s AND i.Price = %s""", drink_order_list)
+                    AND i.Drink_size = %s AND i.Price = %s""", drink_order_list)
                     connection.commit()
                     print("sql worked for selected id")
                     
@@ -566,7 +566,7 @@ def insert_data_into_orders_table(data, connection):
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
-                    AND Drink_size IS NULL AND i.Price = %s""", drink_order_list)
+                    AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
                     print("sql worked for selected id")
 
@@ -581,7 +581,7 @@ def insert_data_into_orders_table(data, connection):
                     print(drink_order)
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
-                    AND Drink_size = %s AND i.Price = %s""", drink_order)
+                    AND i.Drink_size = %s AND i.Price = %s""", drink_order)
                     connection.commit()
                     print("sql worked for selected id")
                     
