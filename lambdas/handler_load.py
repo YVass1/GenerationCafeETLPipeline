@@ -564,7 +564,7 @@ def insert_data_into_orders_table(data, connection):
                     orders_info.append((payment_id,item_id))
                     
         print("inserting data into staging table for Orders")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Item_id, Payment_id) VALUES %s'
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Payment_id, Item_id) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
         
