@@ -456,7 +456,7 @@ def insert_data_into_items_table(data, connection):
             WHERE I.Drink_type IS NULL
             AND I.Drink_flavour IS NULL
             AND I.Drink_size IS NULL
-            AND I.Price IS NULL;
+            AND I.Price IS NULL);
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
