@@ -535,7 +535,7 @@ def insert_data_into_orders_table(data, connection):
                     print(f"drink_order_list: {drink_order_list}")
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()
+                    item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
@@ -553,7 +553,7 @@ def insert_data_into_orders_table(data, connection):
                     print(f"drink_order_list: {drink_order_list}") 
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()
+                    item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
@@ -573,7 +573,7 @@ def insert_data_into_orders_table(data, connection):
                     print("sql worked for selected id")
 
                     
-                    item_id = cursor.fetchone()
+                    item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0] 
                     
@@ -588,7 +588,7 @@ def insert_data_into_orders_table(data, connection):
                     print(f"drink_order: {drink_order}")
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()
+                    item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
