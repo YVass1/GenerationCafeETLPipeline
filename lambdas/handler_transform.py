@@ -12,21 +12,17 @@ def start(event, context):
     load_dotenv()
     logging.getLogger().setLevel(0)
 
-    PAYLOAD_BUCKET_NAME = os.getenv("PAYLOAD_BUCKET_NAME")
     TTOLQUEUE_URL = os.getenv("TTOLQUEUE_URL")
 
-    file_reference_list = get_json_from_queue(event)
-
+    extracted_jsons = get_json_from_queue(event)
     transformed_dict_list = []
 
-    for file_ref in file_reference_list:
-
-        extracted_dict = convert_json_to_dict(file_ref, PAYLOAD_BUCKET_NAME)
+    for extracted_json in extracted_jsons:
+        extracted_dict = convert_json_to_dict(extracted_json)
         dict_with_hashes = add_hashes(extracted_dict)
         transformed_dict = transform(dict_with_hashes)
         json_dict = json_serialize_dict(transformed_dict)
-        new_file_ref = send_json_to_s3(json_dict, PAYLOAD_BUCKET_NAME, file_ref)
-        send_file_ref_to_queue(file_ref, TTOLQUEUE_URL)
+        send_json_to_queue(json_dict, TTOLQUEUE_URL)
         debug_prints(transformed_dict)
         transformed_dict_list.append(transformed_dict)
 
@@ -42,27 +38,29 @@ def get_json_from_queue(event):
     return records_list
 
 
-def convert_json_to_dict(file_ref, bucket_name):
-    s3 = boto3.client('s3')
-
-    s3_raw_cafe_data = s3.get_object(Bucket = bucket_name, Key = file_ref)
-
-    data = s3_raw_cafe_data['Body'].read().decode('utf-8')
-   
-    generated_dict = json.loads(data)
+def convert_json_to_dict(json_to_convert):
+    generated_dict = json.loads(json_to_convert)
     print(generated_dict)
     return generated_dict
 
 
-def send_json_to_s3(json_dict, bucket_name, filename):
-    s3 = boto3.client('s3')
+def send_json_to_queue(json_dict, queue_url):
+    sqs = boto3.client('sqs')
 
-    new_file_key = filename.replace(".csv", "") + "_transformed.json"
-    new_file = s3.Object(bucket_name, new_file_key)
+    # Send message to SQS queue
+    response = sqs.send_message(
+        QueueUrl = queue_url,
+        DelaySeconds = 1,
+        MessageAttributes = {
+            'TestAttribute': {
+                'DataType': 'String',
+                'StringValue': 'Hello World'
+            },
+        },
+        MessageBody = json_dict
+    )
 
-    new_file.put(Body = json_dict, CacheControl = "no-cache")
-
-    return new_file_key
+    print(response['MessageId'])
 
 
 def transform(dict_):

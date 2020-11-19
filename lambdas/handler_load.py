@@ -15,7 +15,6 @@ def start(event, context):
     print("Team One Pipeline")
     
     BUCKET_NAME = "cafe-data-data-pump-dev-team-1"
-    PAYLOAD_BUCKET_NAME = "team-1-large-payload-bucket"
     SQL_TEXTFILE_KEY_NAME = "tables_creation_sql_code.txt"
 
     sql_code = read_from_s3(BUCKET_NAME, SQL_TEXTFILE_KEY_NAME)
@@ -27,11 +26,17 @@ def start(event, context):
     print(event)
     print(context)
 
-    file_ref_list = get_json_from_queue(event)
-    dict_list = get_dicts_from_file_refs(file_ref_list, PAYLOAD_BUCKET_NAME)
-    transformed_dict = combine_dicts(dict_list)
+    transformed_jsons = get_json_from_queue(event)
+    transformed_dicts = []
 
-    load(transformed_dict, conn, sql_code)
+    for transformed_json in transformed_jsons:
+        transformed_dict = convert_json_to_dict(transformed_json)
+        print("type of transformed_dict returned by conversion:")
+        print(type(transformed_dict))
+        transformed_dicts.append(transformed_dict)
+    
+    combined_dict = combine_dicts(transformed_dicts)
+    load(combined_dict, conn, sql_code)
     
 
 def get_json_from_queue(event):
@@ -43,20 +48,10 @@ def get_json_from_queue(event):
     return records_list
 
 
-def get_dicts_from_file_refs(file_refs, bucket_name):
-    dict_list = []
-
-    for file_ref in file_refs:
-        s3 = boto3.client('s3')
-
-        s3_raw_cafe_data = s3.get_object(Bucket = bucket_name, Key = file_ref)
-
-        data = s3_raw_cafe_data['Body'].read().decode('utf-8')
-    
-        generated_dict = json.loads(data)
-        dict_list.append(generated_dict)
-    
-    return dict_list
+def convert_json_to_dict(json_to_convert):
+    generated_dict = json.loads(json_to_convert)
+    print(generated_dict)
+    return generated_dict
 
 
 def redshift_connect():
@@ -109,7 +104,12 @@ def read_from_s3(bucket, sql_txtfile_key):
 
 
 def combine_dicts(dict_list):
-    keys = list(dict_list[0].keys())
+    print("data type of dict_list coming in to combine_dicts():")
+    print(type(dict_list))
+    print("data type of dict_list[0] coming in to combine_dicts():")
+    print(type(dict_list[0]))
+    
+    keys = dict_list[0].keys()
     combined_dict = {}
 
     for key in keys:
@@ -309,6 +309,9 @@ def insert_data_cafe_locations_table(data, connection):
         # connection.commit()
         # print("Committing cursor1")
 
+        print("Truncating locations staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Cafe_locations"
+        cursor.execute(sql_command_truncate_table)
         print("inserting data into locations table staging")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s'
         print("Using execute_values")
@@ -352,6 +355,9 @@ def insert_data_into_purchase_times_table(data, connection):
         print("List of only unique datetimes_info")
         unique_full_datetimes_info =  list(set(full_datetimes_info))
 
+        print("Truncating Purchase_times staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Purchase_times"
+        cursor.execute(sql_command_truncate_table)
         print("inserting data into staging table for purchase_times")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s'
         print("Using execute_values")
@@ -362,7 +368,7 @@ def insert_data_into_purchase_times_table(data, connection):
         (SELECT SPT.Datetime, SPT.Day, SPT.Month, SPT.Year, SPT.Time
             FROM Staging_Purchase_times AS SPT
             LEFT OUTER JOIN Purchase_times 
-            ON Purchase_times.Datetime = Staging_Purchase_times.Datetime
+            ON Purchase_times.Datetime = SPT.Datetime
             WHERE Purchase_times.Datetime IS NULL);
         """
         print("Executing inserting unique rows from staging table")
@@ -384,6 +390,9 @@ def insert_data_into_payments_table(data, connection):
         print("Grabbing payment info")
 
         #inserting payment info data into staging payments table
+        print("Truncating Staging_Payments staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Payments"
+        cursor.execute(sql_command_truncate_table)        
         print("inserting data into staging table for Payments")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s'
         print("Using execute_values")
@@ -427,22 +436,25 @@ def insert_data_into_items_table(data, connection):
 
         
         #Inserting data into Staging Items table
+        print("Truncating Staging_Items staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Items"
+        cursor.execute(sql_command_truncate_table) 
         print("inserting data into staging table for Items")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Price, Drink_type, Drink_flavour, Drink_size) VALUES %s'
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Drink_type, Drink_flavour, Drink_size, Price) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_items)
         
         sql_command_insert_unique_data = """
-        INSERT INTO Items
+        INSERT INTO Items (Price, Drink_type, Drink_flavour, Drink_size)
         (SELECT SI.Price, SI.Drink_type, SI.Drink_flavour, SI.Drink_size
             FROM Staging_Items AS SI
             LEFT OUTER JOIN Items AS I
             ON I.Drink_type = SI.Drink_type
-            AND ON I.Drink_favour = SI.Drink_flavour
-            AND ON I.Drink_size = SI.Drink_size
-            AND ON I.Price = SI.Price
+            AND I.Drink_flavour = SI.Drink_flavour
+            AND I.Drink_size = SI.Drink_size
+            AND I.Price = SI.Price
             WHERE I.Drink_type IS NULL
-            AND I.Drink_favour IS NULL
+            AND I.Drink_flavour IS NULL
             AND I.Drink_size IS NULL
             AND I.Price IS NULL);
         """
@@ -562,9 +574,12 @@ def insert_data_into_orders_table(data, connection):
                     payment_id = purchase[0]
                     
                     orders_info.append((payment_id,item_id))
-                    
+
+        print("Truncating Staging_Orders staging table")
+        sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
+        cursor.execute(sql_command_truncate_table)            
         print("inserting data into staging table for Orders")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Item_id, Payment_id) VALUES %s'
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Payment_id, Item_id) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
         
@@ -574,7 +589,7 @@ def insert_data_into_orders_table(data, connection):
             FROM Staging_Orders AS SO
             LEFT OUTER JOIN Orders AS O
             ON O.Payment_id = SO.Payment_id
-            AND ON O.Item_id = SO.Item_id
+            AND O.Item_id = SO.Item_id
             WHERE O.Item_id IS NULL
             AND O.Payment_id IS NULL);
         """
@@ -582,18 +597,6 @@ def insert_data_into_orders_table(data, connection):
         cursor.execute(sql_command_insert_unique_data)
         connection.commit()
         cursor.close()
-
-
-
-        # print("executing many")
-        # sql_command_insert_data_into_table = "INSERT INTO Orders (Payment_id, Item_id) VALUES %s "  
-        # print("sql command variable")         
-        # psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
-        # print("excute many for inserting into orders")
-        # connection.commit()
-        # print("connection being committed")
-        # cursor.close()
-        # print("cursor closed")
 
 
 def insert_data_into_all_tables(data, connection):
@@ -605,6 +608,7 @@ def insert_data_into_all_tables(data, connection):
         insert_data_into_payments_table(data, connection)
         insert_data_into_items_table(data,connection)
         insert_data_into_orders_table(data,connection)
+        print("insert_data_into_all_tables success")
     except Exception as e:
         print("insert_data_into_all_tables failure")
         print(e)
