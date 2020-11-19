@@ -438,11 +438,11 @@ def insert_data_into_items_table(data, connection):
             FROM Staging_Items AS SI
             LEFT OUTER JOIN Items AS I
             ON I.Drink_type = SI.Drink_type
-            AND ON I.Drink_favour = SI.Drink_flavour
-            AND ON I.Drink_size = SI.Drink_size
-            AND ON I.Price = SI.Price
+            AND I.Drink_flavour = SI.Drink_flavour
+            AND I.Drink_size = SI.Drink_size
+            AND I.Price = SI.Price
             WHERE I.Drink_type IS NULL
-            AND I.Drink_favour IS NULL
+            AND I.Drink_flavour IS NULL
             AND I.Drink_size IS NULL
             AND I.Price IS NULL);
         """
@@ -574,7 +574,7 @@ def insert_data_into_orders_table(data, connection):
             FROM Staging_Orders AS SO
             LEFT OUTER JOIN Orders AS O
             ON O.Payment_id = SO.Payment_id
-            AND ON O.Item_id = SO.Item_id
+            AND O.Item_id = SO.Item_id
             WHERE O.Item_id IS NULL
             AND O.Payment_id IS NULL);
         """
