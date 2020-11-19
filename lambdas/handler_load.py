@@ -584,7 +584,7 @@ def insert_data_into_orders_table(data, connection):
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order)
                     connection.commit()
-                    print(f"drink_order: {drink_order_list}"")
+                    print(f"drink_order: {drink_order_list}")
                     print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()
