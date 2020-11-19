@@ -504,7 +504,7 @@ def insert_data_into_orders_table(data, connection):
         print("Selecting items_id for the corresponding payment_id")
         orders_info = []
 
-        print("looping through each purchase")
+        print("looping through each drink in each purchase")
         for purchase in all_purchases_with_payment_id:
             # TODO: We are currently grabbing menu item IDs from the table one by one for each drink in each order (eg. 400 * 2?)
             # 1. Given then that items are menu items is the table expected to grow beyond a size where pulling the IDs for the whole table
@@ -513,9 +513,7 @@ def insert_data_into_orders_table(data, connection):
             # 2. Would calculating menu item ids upfront instead of auto increment also work here - only an option as you may go this route
             # for payment_ids?
 
-            print("looping through every drink in said purchase")
             for drink_order in purchase[1]:
-
 
                 drink_flavour_index = 1
                 drink_size_index = 2
@@ -535,7 +533,7 @@ def insert_data_into_orders_table(data, connection):
                     connection.commit()
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
@@ -552,7 +550,7 @@ def insert_data_into_orders_table(data, connection):
                     connection.commit()
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
@@ -571,7 +569,7 @@ def insert_data_into_orders_table(data, connection):
                     print("sql worked for selected id")
 
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0] 
                     
@@ -585,7 +583,7 @@ def insert_data_into_orders_table(data, connection):
                     connection.commit()
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
