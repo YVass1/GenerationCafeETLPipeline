@@ -446,17 +446,17 @@ def insert_data_into_items_table(data, connection):
         
         sql_command_insert_unique_data = """
         INSERT INTO Items (Price, Drink_type, Drink_flavour, Drink_size)
-        (SELECT SI.Price, SI.Drink_type, SI.Drink_flavour, SI.Drink_size
+        (SELECT SI.item_id, SI.price, SI.drink_type, SI.drink_flavour, SI.drink_size, I.item_id, I.price, I.drink_type, I.drink_flavour, I.drink_size
             FROM Staging_Items AS SI
             LEFT OUTER JOIN Items AS I
-            ON I.Drink_type = SI.Drink_type
-            AND I.Drink_flavour = SI.Drink_flavour
-            AND I.Drink_size = SI.Drink_size
-            AND I.Price = SI.Price
+            ON I.drink_type = SI.drink_type
+            AND I.price =  SI.price
+            AND (I.drink_flavour = SI.drink_flavour OR (I.drink_flavour IS NULL AND SI.drink_flavour IS NULL))
+            AND (I.drink_size = SI.drink_size OR (I.drink_size IS NULL AND SI.drink_size IS NULL))
             WHERE I.Drink_type IS NULL
             AND I.Drink_flavour IS NULL
             AND I.Drink_size IS NULL
-            AND I.Price IS NULL);
+            AND I.Price IS NULL;
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
