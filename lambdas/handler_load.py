@@ -428,7 +428,7 @@ def insert_data_into_items_table(data, connection):
         
         #Inserting data into Staging Items table
         print("inserting data into staging table for Items")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Price, Drink_type, Drink_flavour, Drink_size) VALUES %s'
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Drink_type, Drink_flavour, Drink_size, Price) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_items)
         
