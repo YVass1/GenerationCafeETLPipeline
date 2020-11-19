@@ -185,7 +185,7 @@ def is_value_none(index, tuple_data):
     """Checks if in data (tuple) the specified index has a None value.
     If found to be True, returns True, otherwise False."""
     is_none = False
-    if tuple_data[index] is None:
+    if tuple_data[index] is 'NULL':
         is_none = True
     return is_none
 
@@ -491,6 +491,7 @@ def insert_data_into_orders_table(data, connection):
   
         hashed_payment_ids = data["hash"]
         all_purchases = reformat_items_info_for_sql(data, "ALL_PURCHASES")
+        # [  [(drink1, drink1price), (drink2)] , [person2 ], ...   ]
 
         print("Grabbing hashed_payment_ids/payment_info/purchase_info")
 
@@ -549,7 +550,7 @@ def insert_data_into_orders_table(data, connection):
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order_list)
                     connection.commit()
-                    print(f"drink_order_list: {drink_order_list}")
+                    print(f"drink_order_list: {drink_order_list}") 
                     print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()
