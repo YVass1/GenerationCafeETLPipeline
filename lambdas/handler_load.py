@@ -504,7 +504,7 @@ def insert_data_into_orders_table(data, connection):
         print("Selecting items_id for the corresponding payment_id")
         orders_info = []
 
-        print("looping through each purchase")
+        print("looping through each drink in each purchase")
         for purchase in all_purchases_with_payment_id:
             # TODO: We are currently grabbing menu item IDs from the table one by one for each drink in each order (eg. 400 * 2?)
             # 1. Given then that items are menu items is the table expected to grow beyond a size where pulling the IDs for the whole table
@@ -513,9 +513,7 @@ def insert_data_into_orders_table(data, connection):
             # 2. Would calculating menu item ids upfront instead of auto increment also work here - only an option as you may go this route
             # for payment_ids?
 
-            print("looping through every drink in said purchase")
             for drink_order in purchase[1]:
-
 
                 drink_flavour_index = 1
                 drink_size_index = 2
@@ -527,15 +525,16 @@ def insert_data_into_orders_table(data, connection):
                     #removing index 1 and index 2
                     #note index 3 is not inclusive so it is not removed
                     del drink_order_list[1:3]
-                    print(drink_order_list)
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
                     AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
+                    
+                    print(f"drink_order_list: {drink_order_list}")
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
@@ -544,15 +543,16 @@ def insert_data_into_orders_table(data, connection):
                 elif is_value_none( drink_flavour_index, drink_order):
                     drink_order_list = list(drink_order)
                     drink_order_list.remove(drink_order_list[drink_flavour_index])
-                    print(drink_order_list)
+
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order_list)
                     connection.commit()
+                    print(f"drink_order_list: {drink_order_list}")
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
@@ -562,30 +562,32 @@ def insert_data_into_orders_table(data, connection):
                     
                     drink_order_list = list(drink_order)
                     drink_order_list.remove(drink_order_list[drink_size_index])
-                    print(drink_order_list)
+
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
+                    print(f"drink_order_list: {drink_order_list}")
                     print("sql worked for selected id")
 
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0] 
                     
                     orders_info.append((payment_id, item_id))
                 
                 else:
-                    print(drink_order)
+                    
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order)
                     connection.commit()
+                    print(f"drink_order: {drink_order_list}")
                     print("sql worked for selected id")
                     
-                    item_id = cursor.fetchone()[0]
+                    item_id = cursor.fetchone()
                     print(f"fetching item_id: {item_id}")
                     payment_id = purchase[0]
                     
