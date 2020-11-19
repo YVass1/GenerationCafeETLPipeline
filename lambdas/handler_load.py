@@ -527,7 +527,7 @@ def insert_data_into_orders_table(data, connection):
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour IS NULL
-                    AND Drink_size IS NULL AND i.Price = %s """, drink_order_list)
+                    AND Drink_size IS NULL AND i.Price = %s ORDER BY i.Item_id""", drink_order_list)
                     connection.commit()
                     
                     item_id = cursor.fetchone()[0]
@@ -541,7 +541,7 @@ def insert_data_into_orders_table(data, connection):
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
-                    AND Drink_size = %s AND i.Price = %s""", drink_order_list)
+                    AND Drink_size = %s AND i.Price = %s ORDER BY i.Item_id""", drink_order_list)
                     connection.commit()
                     
                     item_id = cursor.fetchone()[0]
@@ -556,7 +556,7 @@ def insert_data_into_orders_table(data, connection):
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
-                    AND Drink_size IS NULL AND i.Price = %s""", drink_order_list)
+                    AND Drink_size IS NULL AND i.Price = %s ORDER BY i.Item_id""", drink_order_list)
                     connection.commit()
                     
                     item_id = cursor.fetchone()[0]
@@ -567,7 +567,7 @@ def insert_data_into_orders_table(data, connection):
                 else:
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
-                    AND Drink_size= %s AND i.Price = %s """, drink_order)
+                    AND Drink_size= %s AND i.Price = %s ORDER BY i.Item_id""", drink_order)
                     connection.commit()
                     
                     item_id = cursor.fetchone()[0]
