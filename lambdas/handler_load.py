@@ -525,12 +525,13 @@ def insert_data_into_orders_table(data, connection):
                     #removing index 1 and index 2
                     #note index 3 is not inclusive so it is not removed
                     del drink_order_list[1:3]
-                    print(drink_order_list)
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
                     AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
+                    
+                    print("drink_order_list: "drink_order_list)
                     print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()
@@ -542,12 +543,13 @@ def insert_data_into_orders_table(data, connection):
                 elif is_value_none( drink_flavour_index, drink_order):
                     drink_order_list = list(drink_order)
                     drink_order_list.remove(drink_order_list[drink_flavour_index])
-                    print(drink_order_list)
+
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order_list)
                     connection.commit()
+                    print("drink_order_list: "drink_order_list)
                     print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()
@@ -560,12 +562,13 @@ def insert_data_into_orders_table(data, connection):
                     
                     drink_order_list = list(drink_order)
                     drink_order_list.remove(drink_order_list[drink_size_index])
-                    print(drink_order_list)
+
                     
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
+                    print("drink_order_list: "drink_order_list)
                     print("sql worked for selected id")
 
                     
@@ -576,11 +579,12 @@ def insert_data_into_orders_table(data, connection):
                     orders_info.append((payment_id, item_id))
                 
                 else:
-                    print(drink_order)
+                    
                     cursor.execute("""SELECT i.Item_id FROM  
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order)
                     connection.commit()
+                    print("drink_order: "drink_order_list)
                     print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()
