@@ -446,7 +446,7 @@ def insert_data_into_items_table(data, connection):
         
         sql_command_insert_unique_data = """
         INSERT INTO Items (Price, Drink_type, Drink_flavour, Drink_size)
-        (SELECT SI.item_id, SI.price, SI.drink_type, SI.drink_flavour, SI.drink_size, I.item_id, I.price, I.drink_type, I.drink_flavour, I.drink_size
+        (SELECT SI.price, SI.drink_type, SI.drink_flavour, SI.drink_size
             FROM Staging_Items AS SI
             LEFT OUTER JOIN Items AS I
             ON I.drink_type = SI.drink_type
