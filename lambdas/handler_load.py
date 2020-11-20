@@ -543,7 +543,7 @@ def insert_data_into_orders_table(data, connection):
         #Selecting items_id for the corresponding payment_id
 
         command = """SELECT i.Item_id, i.Drink_type, i.Drink_flavour, i.Drink_size, i.Price FROM Items as i"""
-        cursor.execute_values(command)
+        cursor.execute(command)
         connection.commit()
 
         items = cursor.fetchall()
