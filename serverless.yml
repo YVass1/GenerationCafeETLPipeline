@@ -26,9 +26,10 @@ resources:
       Properties:
         MessageRetentionPeriod: 1209600
         QueueName: Team1TtoLqueue
+        VisibilityTimeout: 3
         RedrivePolicy: 
           deadLetterTargetArn: !GetAtt team1TtoLqueueDLQ.Arn
-          maxReceiveCount: 4
+          maxReceiveCount: 5
     team1EtoTqueueDLQ:
       Type: "AWS::SQS::Queue"
       Properties:
@@ -73,6 +74,7 @@ functions:
     runtime: python3.8
     handler: handler_load.start
     module: lambdas
+    timeout: 85
     reservedConcurrency: 10
     vpc:
       securityGroupIds:
