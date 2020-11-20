@@ -324,9 +324,9 @@ def insert_data_cafe_locations_table(data, connection):
         
         sql_command_insert_unique_data = f"""
         INSERT INTO Cafe_locations
-        (SELECT Staging_Cafe_locations.Location_name
+        (SELECT {table_name}.Location_name
             FROM {table_name}
-            LEFT OUTER JOIN Cafe_locations ON Cafe_locations.Location_name = Staging_Cafe_locations.Location_name
+            LEFT OUTER JOIN Cafe_locations ON Cafe_locations.Location_name = {table_name}.Location_name
             WHERE Cafe_locations.Location_name IS NULL);
         """
         print("Executing inserting unique rows from staging table")
