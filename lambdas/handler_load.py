@@ -313,7 +313,7 @@ def insert_data_cafe_locations_table(data, connection):
         sql_command_truncate_table = "TRUNCATE TABLE Staging_Cafe_locations"
         cursor.execute(sql_command_truncate_table)
         print("inserting data into locations table staging")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s's
+        sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations) 
         
