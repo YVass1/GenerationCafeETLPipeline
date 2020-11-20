@@ -91,7 +91,7 @@ def split_dict(dict_):
     
     small_dict_list.append(dict_)
 
-    print("number of split dicts produced: " + len(small_dict_list))
+    print("number of split dicts produced: " + str(len(small_dict_list)))
     print("lengths of split dicts produced:")
 
     for item in small_dict_list:

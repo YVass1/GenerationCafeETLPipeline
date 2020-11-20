@@ -5,7 +5,8 @@ import csv
 import json
 import boto3
 import logging
-import datetime 
+import datetime
+import uuid
 from dotenv import load_dotenv
 import re
 import psycopg2.extras as psy
@@ -104,7 +105,7 @@ def read_from_s3(bucket, sql_txtfile_key):
 
 
 def combine_dicts(dict_list):
-    print("number of dicts going into combine_dicts(): " + len(dict_list))
+    print("number of dicts going into combine_dicts(): " + str(len(dict_list)))
 
     keys = dict_list[0].keys()
     combined_dict = {}
@@ -283,6 +284,7 @@ def reformat_items_info_for_sql(data, return_type = "ALL"):
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
+format_table_name = lambda name: name.replace("-", "")
 
 def insert_data_cafe_locations_table(data, connection):
     print("insert_data_into_cafe_locations_table")
@@ -308,7 +310,7 @@ def insert_data_cafe_locations_table(data, connection):
         # print("Committing cursor1")
 
         print("Truncating locations staging table")
-        table_name = f'Staging_Cafe_locations_{str(uuid.uuid1())}'
+        table_name = f'Staging_Cafe_locations_{format_table_name(str(uuid.uuid1()))}'
         sql_command_truncate_table = f"""
             CREATE TABLE {table_name}(
             Location_name varchar(100) NOT NULL,
@@ -360,7 +362,7 @@ def insert_data_into_purchase_times_table(data, connection):
         unique_full_datetimes_info =  list(set(full_datetimes_info))
 
         print("Truncating Purchase_times staging table")
-        table_name = f'Staging_Purchase_Times_{str(uuid.uuid1())}'
+        table_name = f'Staging_Purchase_Times_{format_table_name(str(uuid.uuid1()))}'
         sql_command_truncate_table = f"""
             CREATE TABLE {table_name} (
             Datetime DATETIME,
@@ -405,7 +407,7 @@ def insert_data_into_payments_table(data, connection):
 
         #inserting payment info data into staging payments table
         print("Truncating Staging_Payments staging table")
-        table_name = f'Staging_Payments_{str(uuid.uuid1())}'
+        table_name = f'Staging_Payments_{format_table_name(str(uuid.uuid1()))}'
         sql_command_truncate_table = f"""
             CREATE TABLE {table_name}(
             Payment_id VARCHAR,
@@ -464,7 +466,7 @@ def insert_data_into_items_table(data, connection):
         
         #Inserting data into Staging Items table
         print("Truncating Staging_Items staging table")
-        table_name = f'Staging_Items_{str(uuid.uuid1())}'
+        table_name = f'Staging_Items_{format_table_name(str(uuid.uuid1()))}'
         sql_command_truncate_table = f"""
             CREATE TABLE IF {table_name} (
             Item_id INT IDENTITY(1,1),
@@ -633,7 +635,7 @@ def insert_data_into_orders_table(data, connection):
 
         print("Truncating Staging_Orders staging table")
         # sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
-        table_name = f'Staging_Orders_{str(uuid.uuid1())}'
+        table_name = f'Staging_Orders_{format_table_name(str(uuid.uuid1()))}'
         sql_command_truncate_table = f"""
             CREATE TABLE {table_name}(
                 Order_id INT IDENTITY(1, 1),
