@@ -70,6 +70,8 @@ def send_json_to_queue(dict_, queue_url):
 
 
 def split_dict(dict_):
+    print("size of dict lists before split: " + str(len(dict_["datetime"])))
+    
     MAX_DICT_SIZE = 400
     
     keys = list(dict_.keys())
@@ -88,6 +90,12 @@ def split_dict(dict_):
         small_dict_list.append(small_dict)
     
     small_dict_list.append(dict_)
+
+    print("number of split dicts produced: " + str(len(small_dict_list)))
+    print("lengths of split dicts produced:")
+
+    for item in small_dict_list:
+        print(len(item["datetime"]))
     
     return small_dict_list
 
