@@ -315,7 +315,7 @@ def insert_data_cafe_locations_table(data, connection):
         print("inserting data into locations table staging")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s'
         print("Using execute_values")
-        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations)
+        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations) 
         
         sql_command_insert_unique_data = """
         INSERT INTO Cafe_locations
@@ -361,7 +361,7 @@ def insert_data_into_purchase_times_table(data, connection):
         print("inserting data into staging table for purchase_times")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s'
         print("Using execute_values")
-        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_full_datetimes_info)
+        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_full_datetimes_info, page_size=500)
         
         sql_command_insert_unique_data = """
         INSERT INTO Purchase_times
@@ -396,7 +396,7 @@ def insert_data_into_payments_table(data, connection):
         print("inserting data into staging table for Payments")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s'
         print("Using execute_values")
-        psy.execute_values(cursor, sql_command_insert_data_into_table, payments_info)
+        psy.execute_values(cursor, sql_command_insert_data_into_table, payments_info, page_size=500)
         
         sql_command_insert_unique_data = """
         INSERT INTO Payments
@@ -442,7 +442,7 @@ def insert_data_into_items_table(data, connection):
         print("inserting data into staging table for Items")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Drink_type, Drink_flavour, Drink_size, Price) VALUES %s'
         print("Using execute_values")
-        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_items)
+        psy.execute_values(cursor, sql_command_insert_data_into_table, unique_items, page_size=500)
         
         sql_command_insert_unique_data = """
         INSERT INTO Items (Price, Drink_type, Drink_flavour, Drink_size)
@@ -600,7 +600,7 @@ def insert_data_into_orders_table(data, connection):
         print("inserting data into staging table for Orders")
         sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Payment_id, Item_id) VALUES %s'
         print("Using execute_values")
-        psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info)
+        psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info, page_size=500)
         
         sql_command_insert_unique_data = """
         INSERT INTO Orders (Item_id, Payment_id)
