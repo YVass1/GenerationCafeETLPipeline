@@ -104,11 +104,8 @@ def read_from_s3(bucket, sql_txtfile_key):
 
 
 def combine_dicts(dict_list):
-    print("data type of dict_list coming in to combine_dicts():")
-    print(type(dict_list))
-    print("data type of dict_list[0] coming in to combine_dicts():")
-    print(type(dict_list[0]))
-    
+    print("number of dicts going into combine_dicts(): " + len(dict_list))
+
     keys = dict_list[0].keys()
     combined_dict = {}
 
@@ -118,6 +115,7 @@ def combine_dicts(dict_list):
     for dict_ in dict_list:
         for key, list_ in dict_.items():
             combined_dict[key] += list_
+            print(len(combined_dict[key]))
     
     return combined_dict
 
@@ -532,8 +530,8 @@ def insert_data_into_orders_table(data, connection):
                     AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
                     
-                    print(f"drink_order_list: {drink_order_list}")
-                    print("sql worked for selected id")
+                    #print(f"drink_order_list: {drink_order_list}")
+                    #print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
@@ -550,8 +548,8 @@ def insert_data_into_orders_table(data, connection):
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order_list)
                     connection.commit()
-                    print(f"drink_order_list: {drink_order_list}") 
-                    print("sql worked for selected id")
+                    #print(f"drink_order_list: {drink_order_list}") 
+                    #print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
@@ -569,8 +567,8 @@ def insert_data_into_orders_table(data, connection):
                     Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size IS NULL AND i.Price = %s""", drink_order_list)
                     connection.commit()
-                    print(f"drink_order_list: {drink_order_list}")
-                    print("sql worked for selected id")
+                    #print(f"drink_order_list: {drink_order_list}")
+                    #print("sql worked for selected id")
 
                     
                     item_id = cursor.fetchone()[0]
@@ -585,8 +583,8 @@ def insert_data_into_orders_table(data, connection):
                     Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
                     AND i.Drink_size = %s AND i.Price = %s""", drink_order)
                     connection.commit()
-                    print(f"drink_order: {drink_order}")
-                    print("sql worked for selected id")
+                    #print(f"drink_order: {drink_order}")
+                    #print("sql worked for selected id")
                     
                     item_id = cursor.fetchone()[0]
                     print(f"fetching item_id: {item_id}")
