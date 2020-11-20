@@ -73,6 +73,7 @@ functions:
     runtime: python3.8
     handler: handler_load.start
     module: lambdas
+    reservedConcurrency: 10
     vpc:
       securityGroupIds:
         - !ImportValue RedshiftAndVPC-VPCSecurtiyGroup
