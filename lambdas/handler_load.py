@@ -519,16 +519,13 @@ def insert_data_into_orders_table(data, connection):
             for drink_order in purchase[1]:
                 #purchase = (paymentid, [( "frappes", "caramel", "medium"),("frappes", None, "medium")])
                 #drink_order = ("frappes", "caramel", "medium")
-                #drink_order1 = ("frappes", "caramel", None, 200)
                 for item in items:
                 # item = (1, "frappes", "caramel", "medium",200)
-                # item 1 = (17, "frappes", "caramel", None ,200)
-                    if item[1] == drink_order[0] and item[2] == drink_order[1] and item[3] == drink_order[2] and item[4] == drink_order[3]:
+                    if (item[1] == drink_order[0] and item[2] == drink_order[1]) and (item[3] == drink_order[2] and item[4] == drink_order[3]):
                         item_id = item[0]
                         payment_id = purchase[0]
                         orders_info.append((payment_id, item_id))
 
-        
         print("Truncating Staging_Orders staging table")
         sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
         cursor.execute(sql_command_truncate_table)            
