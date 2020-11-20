@@ -5,7 +5,8 @@ import csv
 import json
 import boto3
 import logging
-import datetime 
+import datetime
+import uuid
 from dotenv import load_dotenv
 import re
 import psycopg2.extras as psy
@@ -104,11 +105,8 @@ def read_from_s3(bucket, sql_txtfile_key):
 
 
 def combine_dicts(dict_list):
-    print("data type of dict_list coming in to combine_dicts():")
-    print(type(dict_list))
-    print("data type of dict_list[0] coming in to combine_dicts():")
-    print(type(dict_list[0]))
-    
+    print("number of dicts going into combine_dicts(): " + str(len(dict_list)))
+
     keys = dict_list[0].keys()
     combined_dict = {}
 
@@ -118,6 +116,7 @@ def combine_dicts(dict_list):
     for dict_ in dict_list:
         for key, list_ in dict_.items():
             combined_dict[key] += list_
+            print(len(combined_dict[key]))
     
     return combined_dict
 
@@ -185,7 +184,7 @@ def is_value_none(index, tuple_data):
     """Checks if in data (tuple) the specified index has a None value.
     If found to be True, returns True, otherwise False."""
     is_none = False
-    if tuple_data[index] is None:
+    if tuple_data[index] is 'NULL':
         is_none = True
     return is_none
 
@@ -285,6 +284,7 @@ def reformat_items_info_for_sql(data, return_type = "ALL"):
 
 #insert data into tables in correct order due to dependencies (tier1 --> tier2 --> tier3)
 
+format_table_name = lambda name: name.replace("-", "")
 
 def insert_data_cafe_locations_table(data, connection):
     print("insert_data_into_cafe_locations_table")
@@ -310,22 +310,28 @@ def insert_data_cafe_locations_table(data, connection):
         # print("Committing cursor1")
 
         print("Truncating locations staging table")
-        sql_command_truncate_table = "TRUNCATE TABLE Staging_Cafe_locations"
+        table_name = f'Staging_Cafe_locations_{format_table_name(str(uuid.uuid1()))}'
+        sql_command_truncate_table = f"""
+            CREATE TABLE {table_name}(
+            Location_name varchar(100) NOT NULL,
+            PRIMARY KEY(Location_name))
+        """
         cursor.execute(sql_command_truncate_table)
         print("inserting data into locations table staging")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Cafe_locations (Location_name) VALUES %s'
+        sql_command_insert_data_into_table = f'INSERT INTO {table_name} (Location_name) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_locations) 
         
-        sql_command_insert_unique_data = """
+        sql_command_insert_unique_data = f"""
         INSERT INTO Cafe_locations
-        (SELECT Staging_Cafe_locations.Location_name
-            FROM Staging_Cafe_locations
-            LEFT OUTER JOIN Cafe_locations ON Cafe_locations.Location_name = Staging_Cafe_locations.Location_name
+        (SELECT {table_name}.Location_name
+            FROM {table_name}
+            LEFT OUTER JOIN Cafe_locations ON Cafe_locations.Location_name = {table_name}.Location_name
             WHERE Cafe_locations.Location_name IS NULL);
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
+        cursor.execute(f"DROP TABLE {table_name}")
         connection.commit()
         cursor.close()
 
@@ -356,23 +362,33 @@ def insert_data_into_purchase_times_table(data, connection):
         unique_full_datetimes_info =  list(set(full_datetimes_info))
 
         print("Truncating Purchase_times staging table")
-        sql_command_truncate_table = "TRUNCATE TABLE Staging_Purchase_times"
+        table_name = f'Staging_Purchase_Times_{format_table_name(str(uuid.uuid1()))}'
+        sql_command_truncate_table = f"""
+            CREATE TABLE {table_name} (
+            Datetime DATETIME,
+            Day varchar(25),
+            Month varchar(25),
+            Year INT,
+            Time TIME,
+            PRIMARY KEY (Datetime))
+        """
         cursor.execute(sql_command_truncate_table)
         print("inserting data into staging table for purchase_times")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Purchase_times (Datetime, Day, Month, Year, Time) VALUES %s'
+        sql_command_insert_data_into_table = f'INSERT INTO {table_name} (Datetime, Day, Month, Year, Time) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_full_datetimes_info, page_size=500)
         
-        sql_command_insert_unique_data = """
+        sql_command_insert_unique_data = f"""
         INSERT INTO Purchase_times
         (SELECT SPT.Datetime, SPT.Day, SPT.Month, SPT.Year, SPT.Time
-            FROM Staging_Purchase_times AS SPT
+            FROM {table_name} AS SPT
             LEFT OUTER JOIN Purchase_times 
             ON Purchase_times.Datetime = SPT.Datetime
             WHERE Purchase_times.Datetime IS NULL);
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
+        cursor.execute(f"DROP TABLE {table_name}")
         print("Commiting")
         connection.commit()
         cursor.close()
@@ -391,23 +407,36 @@ def insert_data_into_payments_table(data, connection):
 
         #inserting payment info data into staging payments table
         print("Truncating Staging_Payments staging table")
-        sql_command_truncate_table = "TRUNCATE TABLE Staging_Payments"
+        table_name = f'Staging_Payments_{format_table_name(str(uuid.uuid1()))}'
+        sql_command_truncate_table = f"""
+            CREATE TABLE {table_name}(
+            Payment_id VARCHAR,
+            Forename varchar(100),
+            Surname varchar(100),
+            Total_amount INT,
+            Payment_type VARCHAR(100),
+            Card_number VARCHAR(255),
+            Location_name VARCHAR,
+            Datetime DATETIME,
+            PRIMARY KEY(Payment_id))
+        """
         cursor.execute(sql_command_truncate_table)        
         print("inserting data into staging table for Payments")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s'
+        sql_command_insert_data_into_table = f'INSERT INTO {table_name} (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, payments_info, page_size=500)
         
-        sql_command_insert_unique_data = """
+        sql_command_insert_unique_data = f"""
         INSERT INTO Payments
         (SELECT SP.Payment_id, SP.Forename, SP.Surname, SP.Total_amount, SP.Payment_type, SP.Card_number, SP.Location_name, SP.Datetime
-            FROM Staging_Payments AS SP
+            FROM {table_name} AS SP
             LEFT OUTER JOIN Payments AS P
             ON P.Payment_id = SP.Payment_id
             WHERE P.Payment_id IS NULL);
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
+        cursor.execute(f"DROP TABLE {table_name}")
         connection.commit()
         cursor.close()
         
@@ -437,22 +466,31 @@ def insert_data_into_items_table(data, connection):
         
         #Inserting data into Staging Items table
         print("Truncating Staging_Items staging table")
-        sql_command_truncate_table = "TRUNCATE TABLE Staging_Items"
+        table_name = f'Staging_Items_{format_table_name(str(uuid.uuid1()))}'
+        sql_command_truncate_table = f"""
+            CREATE TABLE {table_name} (
+            Item_id INT IDENTITY(1,1),
+            Price INT,
+            Drink_type VARCHAR(100),
+            Drink_flavour VARCHAR(100),
+            Drink_size VARCHAR(100),
+            PRIMARY KEY (Item_id))
+        """
         cursor.execute(sql_command_truncate_table) 
         print("inserting data into staging table for Items")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Items (Drink_type, Drink_flavour, Drink_size, Price) VALUES %s'
+        sql_command_insert_data_into_table = f'INSERT INTO {table_name} (Drink_type, Drink_flavour, Drink_size, Price) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, unique_items, page_size=500)
         
-        sql_command_insert_unique_data = """
+        sql_command_insert_unique_data = f"""
         INSERT INTO Items (Price, Drink_type, Drink_flavour, Drink_size)
-        (SELECT SI.Price, SI.Drink_type, SI.Drink_flavour, SI.Drink_size
-            FROM Staging_Items AS SI
+        (SELECT SI.price, SI.drink_type, SI.drink_flavour, SI.drink_size
+            FROM {table_name} AS SI
             LEFT OUTER JOIN Items AS I
-            ON I.Drink_type = SI.Drink_type
-            AND I.Drink_flavour = SI.Drink_flavour
-            AND I.Drink_size = SI.Drink_size
-            AND I.Price = SI.Price
+            ON I.drink_type = SI.drink_type
+            AND I.price =  SI.price
+            AND (I.drink_flavour = SI.drink_flavour OR (I.drink_flavour IS NULL AND SI.drink_flavour IS NULL))
+            AND (I.drink_size = SI.drink_size OR (I.drink_size IS NULL AND SI.drink_size IS NULL))
             WHERE I.Drink_type IS NULL
             AND I.Drink_flavour IS NULL
             AND I.Drink_size IS NULL
@@ -460,6 +498,7 @@ def insert_data_into_items_table(data, connection):
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
+        cursor.execute(f"DROP TABLE {table_name}")
         connection.commit()
         cursor.close()
 
@@ -491,6 +530,7 @@ def insert_data_into_orders_table(data, connection):
   
         hashed_payment_ids = data["hash"]
         all_purchases = reformat_items_info_for_sql(data, "ALL_PURCHASES")
+        # [  [(drink1, drink1price), (drink2)] , [person2 ], ...   ]
 
         print("Grabbing hashed_payment_ids/payment_info/purchase_info")
 
@@ -514,9 +554,11 @@ def insert_data_into_orders_table(data, connection):
 
         orders_info = []
 
+        print("looping through each drink in each purchase")
         for purchase in all_purchases_with_payment_id:
 
             for drink_order in purchase[1]:
+
                 #purchase = (paymentid, [( "frappes", "caramel", "medium"),("frappes", None, "medium")])
                 #drink_order = ("frappes", "caramel", "medium")
                 for item in items:
@@ -527,17 +569,25 @@ def insert_data_into_orders_table(data, connection):
                         orders_info.append((payment_id, item_id))
 
         print("Truncating Staging_Orders staging table")
-        sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
+        # sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
+        table_name = f'Staging_Orders_{format_table_name(str(uuid.uuid1()))}'
+        sql_command_truncate_table = f"""
+            CREATE TABLE {table_name}(
+                Order_id INT IDENTITY(1, 1),
+                Item_id INT,
+                Payment_id VARCHAR,
+                PRIMARY KEY(Order_id))
+        """
         cursor.execute(sql_command_truncate_table)            
         print("inserting data into staging table for Orders")
-        sql_command_insert_data_into_table = 'INSERT INTO Staging_Orders (Payment_id, Item_id) VALUES %s'
+        sql_command_insert_data_into_table = f'INSERT INTO {table_name} (Payment_id, Item_id) VALUES %s'
         print("Using execute_values")
         psy.execute_values(cursor, sql_command_insert_data_into_table, orders_info, page_size=500)
         
-        sql_command_insert_unique_data = """
+        sql_command_insert_unique_data = f"""
         INSERT INTO Orders (Item_id, Payment_id)
         (SELECT SO.Item_id, SO.Payment_id
-            FROM Staging_Orders AS SO
+            FROM {table_name} AS SO
             LEFT OUTER JOIN Orders AS O
             ON O.Payment_id = SO.Payment_id
             AND O.Item_id = SO.Item_id
@@ -546,6 +596,7 @@ def insert_data_into_orders_table(data, connection):
         """
         print("Executing inserting unique rows from staging table")
         cursor.execute(sql_command_insert_unique_data)
+        cursor.execute(f'DROP TABLE {table_name}')
         connection.commit()
         cursor.close()
 
