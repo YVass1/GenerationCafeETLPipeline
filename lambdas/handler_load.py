@@ -161,23 +161,23 @@ def create_database_tables(sql_code_string, connection):
 #####################################################################################################################
 
 #Function to convert any Python None values in the data to NULL (SQL only recognises NULL)
-def convert_none_data_to_null(data):
-    return list(convert_iterable_to_list_with_nones(data))
+# def convert_none_data_to_null(data):
+#     return list(convert_iterable_to_list_with_nones(data))
 
 
-def convert_iterable_to_list_with_nones(iterable):
-    iterable_type = type(iterable)
-    list_with_nulls = []
+# def convert_iterable_to_list_with_nones(iterable):
+#     iterable_type = type(iterable)
+#     list_with_nulls = []
     
-    for item in iterable:
-        if type(item) == tuple or type(item) == list:
-            list_with_nulls.append(convert_iterable_to_list_with_nones(item))
-        elif item == None:
-            list_with_nulls.append("NULL")
-        else:
-            list_with_nulls.append(item)
+#     for item in iterable:
+#         if type(item) == tuple or type(item) == list:
+#             list_with_nulls.append(convert_iterable_to_list_with_nones(item))
+#         elif item == None:
+#             list_with_nulls.append("NULL")
+#         else:
+#             list_with_nulls.append(item)
 
-    return iterable_type(list_with_nulls)
+#     return iterable_type(list_with_nulls)
     
 
 #Function checks if the tuple's chosen index has a None value in there or not    
@@ -497,84 +497,38 @@ def insert_data_into_orders_table(data, connection):
         #Orders table
         #Each payment id joined with purchase (which is a list)
         print("Joining payment_id with purchase_info for each purchase made")
-        all_purchases_with_payment_id = list(zip(hashed_payment_ids, convert_none_data_to_null(all_purchases)))
-        
-        #Selecting items_id for the corresponding payment_id 
+        all_purchases_with_payment_id = list(zip(hashed_payment_ids, all_purchases))
+        # grab item id and corresponding drink type - > tuple
+        # compare drink order with tuple
+        #Selecting items_id for the corresponding payment_id
+
+        command = """SELECT i.Item_id, i.Drink_type, i.Drink_flavour, i.Drink_size, i.Price FROM Items as i"""
+        cursor.execute_values(command)
+        connection.commit()
+
+        items = cursor.fetchall()
+        #output -> item = [(1, "frappes", "caramel", "medium"), (2, "latte", None, "large"), ......]
+
 
         print("Selecting items_id for the corresponding payment_id")
+
         orders_info = []
 
         for purchase in all_purchases_with_payment_id:
-            # TODO: We are currently grabbing menu item IDs from the table one by one for each drink in each order (eg. 400 * 2?)
-            # 1. Given then that items are menu items is the table expected to grow beyond a size where pulling the IDs for the whole table
-            # will impact perforance? If not, we could grab the whole table in one go here and then match drinks to IDs in python
-            # One downside is you need the whole table to match properties to drinks.
-            # 2. Would calculating menu item ids upfront instead of auto increment also work here - only an option as you may go this route
-            # for payment_ids?
 
             for drink_order in purchase[1]:
+                #purchase = (paymentid, [( "frappes", "caramel", "medium"),("frappes", None, "medium")])
+                #drink_order = ("frappes", "caramel", "medium")
+                #drink_order1 = ("frappes", "caramel", None, 200)
+                for item in items:
+                # item = (1, "frappes", "caramel", "medium",200)
+                # item 1 = (17, "frappes", "caramel", None ,200)
+                    if item[1] == drink_order[0] and item[2] == drink_order[1] and item[3] == drink_order[2] and item[4] == drink_order[3]:
+                        item_id = item[0]
+                        payment_id = purchase[0]
+                        orders_info.append((payment_id, item_id))
 
-                drink_flavour_index = 1
-                drink_size_index = 2
-                
-                if is_value_none(drink_flavour_index,drink_order) and is_value_none(drink_size_index, drink_order):
-                    
-                    drink_order_list = list(drink_order)
-
-                    #removing index 1 and index 2
-                    #note index 3 is not inclusive so it is not removed
-                    del drink_order_list[1:3]
-                    
-                    cursor.execute("""SELECT i.Item_id FROM  
-                    Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour IS NULL
-                    AND Drink_size IS NULL AND i.Price = %s """, drink_order_list)
-                    connection.commit()
-                    
-                    item_id = cursor.fetchone()[0]
-                    payment_id = purchase[0]
-                    
-                    orders_info.append((payment_id, item_id))
-
-                elif is_value_none( drink_flavour_index, drink_order):
-                    drink_order_list = list(drink_order)
-                    drink_order_list.remove(drink_order_list[drink_flavour_index])
-                    
-                    cursor.execute("""SELECT i.Item_id FROM  
-                    Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour IS NULL
-                    AND Drink_size = %s AND i.Price = %s""", drink_order_list)
-                    connection.commit()
-                    
-                    item_id = cursor.fetchone()[0]
-                    payment_id = purchase[0]
-                    
-                    orders_info.append((payment_id,item_id))
-
-                elif is_value_none(drink_size_index ,drink_order):
-                    
-                    drink_order_list = list(drink_order)
-                    drink_order_list.remove(drink_order_list[drink_size_index])
-                    
-                    cursor.execute("""SELECT i.Item_id FROM  
-                    Items AS i WHERE i.Drink_type = %s AND i.Drink_flavour = %s
-                    AND Drink_size IS NULL AND i.Price = %s""", drink_order_list)
-                    connection.commit()
-                    
-                    item_id = cursor.fetchone()[0]
-                    payment_id = purchase[0] 
-                    
-                    orders_info.append((payment_id, item_id))
-                
-                else:
-                    cursor.execute("""SELECT i.Item_id FROM  
-                    Items AS i WHERE  i.Drink_type = %s AND i.Drink_flavour = %s
-                    AND Drink_size= %s AND i.Price = %s """, drink_order)
-                    connection.commit()
-                    
-                    item_id = cursor.fetchone()[0]
-                    payment_id = purchase[0]
-                    
-                    orders_info.append((payment_id,item_id))
-
+        
         print("Truncating Staging_Orders staging table")
         sql_command_truncate_table = "TRUNCATE TABLE Staging_Orders"
         cursor.execute(sql_command_truncate_table)            
