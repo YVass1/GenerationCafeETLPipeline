@@ -91,4 +91,5 @@ functions:
             Fn::GetAtt:
               - team1TtoLqueue
               - Arn
+          batchSize: 1
   
