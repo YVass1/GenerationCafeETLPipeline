@@ -468,7 +468,7 @@ def insert_data_into_items_table(data, connection):
         print("Truncating Staging_Items staging table")
         table_name = f'Staging_Items_{format_table_name(str(uuid.uuid1()))}'
         sql_command_truncate_table = f"""
-            CREATE TABLE IF {table_name} (
+            CREATE TABLE {table_name} (
             Item_id INT IDENTITY(1,1),
             Price INT,
             Drink_type VARCHAR(100),
