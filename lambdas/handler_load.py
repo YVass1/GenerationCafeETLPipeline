@@ -126,7 +126,16 @@ def load(cleaned_data, connection, sql_code_txtfile):
     insert_data_into_all_tables(cleaned_data, connection)
 
 
-################## LOAD SECTION ################
+#############################################
+################## LOAD SECTION #############
+#############################################
+
+#####################################################################################################################
+#####################################################################################################################
+################  CREATING DATABASE TABLES  #########################################################################
+#####################################################################################################################
+#####################################################################################################################
+
 def create_database_tables(sql_code_string, connection):
     """Arguments: filepath, database name. Programmatically populates specified database
      with tables using file containing SQL commands."""
@@ -158,26 +167,6 @@ def create_database_tables(sql_code_string, connection):
 ################ REFORMATTING DATA  #################################################################################
 #####################################################################################################################
 #####################################################################################################################
-
-#Function to convert any Python None values in the data to NULL (SQL only recognises NULL)
-# def convert_none_data_to_null(data):
-#     return list(convert_iterable_to_list_with_nones(data))
-
-
-# def convert_iterable_to_list_with_nones(iterable):
-#     iterable_type = type(iterable)
-#     list_with_nulls = []
-    
-#     for item in iterable:
-#         if type(item) == tuple or type(item) == list:
-#             list_with_nulls.append(convert_iterable_to_list_with_nones(item))
-#         elif item == None:
-#             list_with_nulls.append("NULL")
-#         else:
-#             list_with_nulls.append(item)
-
-#     return iterable_type(list_with_nulls)
-    
 
 #Function checks if the tuple's chosen index has a None value in there or not    
 def is_value_none(index, tuple_data):
@@ -302,12 +291,6 @@ def insert_data_cafe_locations_table(data, connection):
 
         print("Inserting data into cafe locations table")
         #inserting data into cafes locations table
-
-        # print("Creating locations table copy")
-        # create_locations_table_copy_sql_command = "CREATE TABLE Copy_cafe_locations AS SELECT * FROM Cafe_locations; TRUNCATE TABLE Cafe_locations;"
-        # cursor.execute(create_locations_table_copy_sql_command)
-        # connection.commit()
-        # print("Committing cursor1")
 
         print("Truncating locations staging table")
         table_name = f'Staging_Cafe_locations_{format_table_name(str(uuid.uuid1()))}'
@@ -439,13 +422,6 @@ def insert_data_into_payments_table(data, connection):
         cursor.execute(f"DROP TABLE {table_name}")
         connection.commit()
         cursor.close()
-        
-    
-        # print("inserting payment info data into payments table") 
-        # sql_command_insert_data_into_table = """INSERT INTO Payments (Payment_id, Forename, Surname, Total_amount, Payment_type, Card_number, Location_name, Datetime) VALUES %s ;"""
-        # psy.execute_values(cursor, sql_command_insert_data_into_table, convert_none_data_to_null(payments_info))
-        # connection.commit()    
-        # cursor.close()
 
 
 def insert_data_into_items_table(data, connection):
@@ -501,15 +477,6 @@ def insert_data_into_items_table(data, connection):
         cursor.execute(f"DROP TABLE {table_name}")
         connection.commit()
         cursor.close()
-
-
-
-        # print("Inserting data into Items table")
-        # sql_command_insert_data_into_table = """INSERT INTO Items (Drink_type , Drink_flavour, Drink_size,Price) VALUES %s """
-        # psy.execute_values(cursor, sql_command_insert_data_into_table, convert_none_data_to_null(unique_items))
-        # connection.commit()
-        # cursor.close()
-
 
 #####################################################################################################################################
 #####################################################################################################################################
