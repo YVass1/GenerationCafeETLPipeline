@@ -5,6 +5,12 @@
 
 ETL data pipeline executes automatically when a .csv file is dropped into the AWS S3 bucket `cafe-data-data-pump-dev-team-1`. 
 
+#### AWS Set Up
+
+-   Requires an AWS Account with correct access, permissions and roles to services such as: S3, Lambda, SQS, Kinesis, Redshift, Quicksight. 
+    -   In the severless.yml edit stage, region and role for the desired AWS account and role. 
+-   Requires S3 bucket to be created in advance for the specified AWS account with name `cafe-data-data-pump-dev-team-1`. 
+
 ## Set up
 
 #### Cloning the repository
