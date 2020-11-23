@@ -35,3 +35,12 @@ ETL data pipeline executes automatically when a .csv file is dropped into the AW
 - To install any requirements, ensure your virtual environment is active, then run the below from the root of the app:
     `pip -m install requirements.txt`
     -   You may need to use `pip3` or other syntax depending on your system.
+
+#### Database Schema
+
+- A database schema can be found in the root of the repo to describe and conceptualise desired database structure. 
+
+
+#### Presentation
+
+- The end of project presentation can be found in the root of the repo, where information on the project pitch and aims, final project outcomes and reflections can be found.
